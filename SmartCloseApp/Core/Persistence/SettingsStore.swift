@@ -3,6 +3,10 @@ import Foundation
 import SwiftUI
 import UniformTypeIdentifiers
 
+private struct SendableSettingsKeyPath<Value>: @unchecked Sendable {
+    let rawValue: WritableKeyPath<Settings, Value>
+}
+
 final class SettingsStore: ObservableObject {
     @Published private(set) var settings: Settings
 
@@ -45,12 +49,13 @@ final class SettingsStore: ObservableObject {
     }
 
     func binding<T>(for keyPath: WritableKeyPath<Settings, T>) -> Binding<T> {
-        Binding(
-            get: { [weak self] in
-                self?.settings[keyPath: keyPath] ?? Settings.default[keyPath: keyPath]
+        let sendableKeyPath = SendableSettingsKeyPath(rawValue: keyPath)
+        return Binding(
+            get: { [weak self, sendableKeyPath] in
+                self?.settings[keyPath: sendableKeyPath.rawValue] ?? Settings.default[keyPath: sendableKeyPath.rawValue]
             },
-            set: { [weak self] newValue in
-                self?.update { $0[keyPath: keyPath] = newValue }
+            set: { [weak self, sendableKeyPath] newValue in
+                self?.update { $0[keyPath: sendableKeyPath.rawValue] = newValue }
             }
         )
     }
