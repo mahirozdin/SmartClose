@@ -11,7 +11,6 @@ permissions:
 
 jobs:
   release:
-    if: ${{ secrets.DEVELOPER_ID_APPLICATION_P12_BASE64 != '' && secrets.DEVELOPER_ID_APPLICATION_P12_PASSWORD != '' }}
     runs-on: macos-latest
     env:
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -24,7 +23,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check release secret availability
+        id: release_secrets
+        shell: bash
+        run: |
+          if [[ -n "${DEVELOPER_ID_APPLICATION_P12_BASE64:-}" && -n "${DEVELOPER_ID_APPLICATION_P12_PASSWORD:-}" ]]; then
+            echo "ready=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "ready=false" >> "${GITHUB_OUTPUT}"
+            echo "Developer ID p12 secrets are not configured. Skipping CI release signing."
+          fi
+
       - name: Validate required secrets
+        if: steps.release_secrets.outputs.ready == 'true'
         shell: bash
         run: |
           if [[ "${APPLE_TEAM_ID}" != "WWRZ5CG3DW" ]]; then
@@ -47,6 +58,7 @@ jobs:
           exit "${missing}"
 
       - name: Import Developer ID certificate
+        if: steps.release_secrets.outputs.ready == 'true'
         shell: bash
         run: |
           CERT_PATH="${RUNNER_TEMP}/developer-id-application.p12"
@@ -76,6 +88,7 @@ jobs:
           fi
 
       - name: Configure notarytool profile
+        if: steps.release_secrets.outputs.ready == 'true'
         run: |
           xcrun notarytool store-credentials "${SMARTCLOSE_NOTARY_PROFILE}" \
             --apple-id "${NOTARYTOOL_APPLE_ID}" \
@@ -83,18 +96,20 @@ jobs:
             --password "${NOTARYTOOL_APP_PASSWORD}"
 
       - name: Build, notarize, and package
+        if: steps.release_secrets.outputs.ready == 'true'
         run: |
           chmod +x scripts/*.sh
           ./scripts/release_local.sh
 
       - name: Upload artifacts
+        if: steps.release_secrets.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: SmartClose-release
           path: dist/
 
       - name: Publish GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: steps.release_secrets.outputs.ready == 'true' && startsWith(github.ref, 'refs/tags/v')
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
