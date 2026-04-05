@@ -31,7 +31,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             test \
-            -skip-testing:SmartCloseUITests
+            -only-testing:SmartCloseTests
       - name: Package Artifact (unsigned)
         run: |
           mkdir -p build/artifacts
