@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          xcodebuild \
+            -project SmartClose.xcodeproj \
+            -scheme SmartClose \
+            -configuration Debug \
+            -destination 'platform=macOS' \
+            -derivedDataPath build/DerivedData \
+            build
+      - name: Test
+        run: |
+          xcodebuild \
+            -project SmartClose.xcodeproj \
+            -scheme SmartClose \
+            -configuration Debug \
+            -destination 'platform=macOS' \
+            -derivedDataPath build/DerivedData \
+            test \
+            -skip-testing:SmartCloseUITests
+      - name: Package Artifact (unsigned)
+        run: |
+          mkdir -p build/artifacts
+          ditto -c -k --sequesterRsrc --keepParent \
+            build/DerivedData/Build/Products/Debug/SmartClose.app \
+            build/artifacts/SmartClose-unsigned.zip
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartClose-unsigned
+          path: build/artifacts/SmartClose-unsigned.zip

@@ -1,0 +1,93 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    env:
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      DEVELOPER_ID_APPLICATION_P12_BASE64: ${{ secrets.DEVELOPER_ID_APPLICATION_P12_BASE64 }}
+      DEVELOPER_ID_APPLICATION_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_APPLICATION_P12_PASSWORD }}
+      NOTARYTOOL_APPLE_ID: ${{ secrets.NOTARYTOOL_APPLE_ID }}
+      NOTARYTOOL_APP_PASSWORD: ${{ secrets.NOTARYTOOL_APP_PASSWORD }}
+      SMARTCLOSE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      SMARTCLOSE_NOTARY_PROFILE: smartclose-ci
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          missing=0
+          for key in \
+            APPLE_TEAM_ID \
+            DEVELOPER_ID_APPLICATION_P12_BASE64 \
+            DEVELOPER_ID_APPLICATION_P12_PASSWORD \
+            NOTARYTOOL_APPLE_ID \
+            NOTARYTOOL_APP_PASSWORD; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "::error::Missing required secret: ${key}"
+              missing=1
+            fi
+          done
+          exit "${missing}"
+
+      - name: Import Developer ID certificate
+        shell: bash
+        run: |
+          CERT_PATH="${RUNNER_TEMP}/developer-id-application.p12"
+          KEYCHAIN_PATH="${RUNNER_TEMP}/smartclose-release.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -base64 24)"
+
+          echo "${DEVELOPER_ID_APPLICATION_P12_BASE64}" | base64 --decode > "${CERT_PATH}"
+
+          security create-keychain -p "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
+          security set-keychain-settings -lut 21600 "${KEYCHAIN_PATH}"
+          security unlock-keychain -p "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
+          security import "${CERT_PATH}" \
+            -P "${DEVELOPER_ID_APPLICATION_P12_PASSWORD}" \
+            -A \
+            -t cert \
+            -f pkcs12 \
+            -k "${KEYCHAIN_PATH}"
+          security list-keychains -d user -s "${KEYCHAIN_PATH}" login.keychain-db
+          security default-keychain -d user -s "${KEYCHAIN_PATH}"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
+          security find-identity -v -p codesigning "${KEYCHAIN_PATH}"
+
+      - name: Configure notarytool profile
+        run: |
+          xcrun notarytool store-credentials "${SMARTCLOSE_NOTARY_PROFILE}" \
+            --apple-id "${NOTARYTOOL_APPLE_ID}" \
+            --team-id "${APPLE_TEAM_ID}" \
+            --password "${NOTARYTOOL_APP_PASSWORD}"
+
+      - name: Build, notarize, and package
+        run: |
+          chmod +x scripts/*.sh
+          ./scripts/release_local.sh
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartClose-release
+          path: dist/
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mapfile -t assets < <(find dist -type f -maxdepth 2 | sort)
+          gh release create "${GITHUB_REF_NAME}" "${assets[@]}" \
+            --title "SmartClose ${GITHUB_REF_NAME}" \
+            --generate-notes
