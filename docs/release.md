@@ -11,7 +11,7 @@ SmartClose is designed to ship outside the Mac App Store as a signed, notarized 
 ## One-time Apple account setup
 1. Accept the latest Apple Developer Program License Agreement if Apple shows a `PLA Update available` error during export.
 2. In Xcode, open `Settings > Accounts > Manage Certificates`.
-3. Create or download a `Developer ID Application` certificate for the release team.
+3. Create or download a `Developer ID Application` certificate for the SmartClose release team `WWRZ5CG3DW`.
 4. Confirm it appears in Keychain:
 
 ```bash
@@ -19,6 +19,12 @@ security find-identity -v -p codesigning | grep "Developer ID Application"
 ```
 
 Without that certificate, `xcodebuild -exportArchive` cannot produce a public Developer ID build.
+
+The expected identity is:
+
+```text
+Developer ID Application: APPILLON BILGI TEKNOLOJILERI ARGE LIMITED SIRKETI (WWRZ5CG3DW)
+```
 
 ## Local release
 Create the notary profile once:
@@ -61,6 +67,8 @@ Required GitHub secrets:
 - `DEVELOPER_ID_APPLICATION_P12_PASSWORD`
 - `NOTARYTOOL_APPLE_ID`
 - `NOTARYTOOL_APP_PASSWORD`
+
+`APPLE_TEAM_ID` must be `WWRZ5CG3DW`. The `.p12` payload must contain the SmartClose `Developer ID Application` identity for that same team, not another Apple team certificate.
 
 To create the certificate secret payload from a local `.p12`:
 

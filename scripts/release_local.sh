@@ -18,7 +18,8 @@ ZIP_PATH="${DIST_DIR}/SmartClose-${VERSION}.zip"
 DMG_PATH="${DIST_DIR}/SmartClose-${VERSION}.dmg"
 CHECKSUM_PATH="${DIST_DIR}/SmartClose-${VERSION}-SHA256.txt"
 EXPORT_OPTIONS_PLIST="$(mktemp "${TMPDIR:-/tmp}/smartclose-export-options.XXXXXX.plist")"
-trap 'rm -f "${EXPORT_OPTIONS_PLIST}"' EXIT
+SUBMISSION_ZIP="$(mktemp "${TMPDIR:-/tmp}/smartclose-notary-submit.XXXXXX.zip")"
+trap 'rm -f "${EXPORT_OPTIONS_PLIST}" "${SUBMISSION_ZIP}"' EXIT
 
 mkdir -p "${DIST_DIR}" "$(dirname "${ARCHIVE_PATH}")" "${EXPORT_PATH}" "${DERIVED_DATA_PATH}"
 rm -rf "${ARCHIVE_PATH}" "${EXPORT_PATH}"
@@ -86,9 +87,14 @@ if ! grep -q "Runtime Version=" <<< "${SIGNATURE_INFO}"; then
   echo "error: hardened runtime is not enabled on the exported app" >&2
   exit 1
 fi
+if ! grep -q "TeamIdentifier=${TEAM_ID}" <<< "${SIGNATURE_INFO}"; then
+  echo "error: exported app TeamIdentifier does not match expected team ${TEAM_ID}" >&2
+  exit 1
+fi
 
 echo "==> Notarizing app bundle"
-xcrun notarytool submit "${APP_PATH}" --keychain-profile "${NOTARY_PROFILE}" --wait
+ditto -c -k --sequesterRsrc --keepParent "${APP_PATH}" "${SUBMISSION_ZIP}"
+xcrun notarytool submit "${SUBMISSION_ZIP}" --keychain-profile "${NOTARY_PROFILE}" --wait
 xcrun stapler staple "${APP_PATH}"
 
 echo "==> Creating ZIP artifact"

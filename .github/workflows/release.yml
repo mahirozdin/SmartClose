@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   release:
+    if: ${{ secrets.DEVELOPER_ID_APPLICATION_P12_BASE64 != '' && secrets.DEVELOPER_ID_APPLICATION_P12_PASSWORD != '' }}
     runs-on: macos-latest
     env:
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -18,7 +19,7 @@ jobs:
       DEVELOPER_ID_APPLICATION_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_APPLICATION_P12_PASSWORD }}
       NOTARYTOOL_APPLE_ID: ${{ secrets.NOTARYTOOL_APPLE_ID }}
       NOTARYTOOL_APP_PASSWORD: ${{ secrets.NOTARYTOOL_APP_PASSWORD }}
-      SMARTCLOSE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      SMARTCLOSE_TEAM_ID: WWRZ5CG3DW
       SMARTCLOSE_NOTARY_PROFILE: smartclose-ci
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +27,11 @@ jobs:
       - name: Validate required secrets
         shell: bash
         run: |
+          if [[ "${APPLE_TEAM_ID}" != "WWRZ5CG3DW" ]]; then
+            echo "::error::APPLE_TEAM_ID must be WWRZ5CG3DW for SmartClose releases."
+            exit 1
+          fi
+
           missing=0
           for key in \
             APPLE_TEAM_ID \
@@ -61,7 +67,13 @@ jobs:
           security list-keychains -d user -s "${KEYCHAIN_PATH}" login.keychain-db
           security default-keychain -d user -s "${KEYCHAIN_PATH}"
           security set-key-partition-list -S apple-tool:,apple: -s -k "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
-          security find-identity -v -p codesigning "${KEYCHAIN_PATH}"
+          IDENTITIES="$(security find-identity -v -p codesigning "${KEYCHAIN_PATH}")"
+          echo "${IDENTITIES}"
+
+          if ! grep -q "Developer ID Application: .*(${APPLE_TEAM_ID})" <<< "${IDENTITIES}"; then
+            echo "::error::Imported certificate does not contain the SmartClose Developer ID identity for team ${APPLE_TEAM_ID}."
+            exit 1
+          fi
 
       - name: Configure notarytool profile
         run: |
