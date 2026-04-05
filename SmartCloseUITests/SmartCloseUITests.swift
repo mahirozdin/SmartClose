@@ -1,6 +1,7 @@
 import Foundation
 import XCTest
 
+@MainActor
 final class SmartCloseUITests: XCTestCase {
     func testOnboardingBlocksUntilPermissionsGranted() {
         let app = launchApp(accessibility: "missing", inputMonitoring: "missing")
