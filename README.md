@@ -1,4 +1,4 @@
-# SmartClose
+# SmartClose - Ultimate MacOS App Closing Solution.
 I created SmartClose because, recently, There are many new macos users arround and My self also switching between Windows and macOs too often, and I find it really annoying that when I click the red close button on the last window of an app, the app doesn't quit. So I made SmartClose to fix this issue.
 
 ** Basic idea: If you click the red close button on the last normal window of an app, SmartClose politely quits the app. If there are multiple windows, it just closes the one you clicked. If anything is ambiguous, it does nothing. **
