@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>SmartClose</title>
+        <item>
+            <title>0.3.0</title>
+            <pubDate>Fri, 19 Jun 2026 01:14:35 +0300</pubDate>
+            <sparkle:version>3</sparkle:version>
+            <sparkle:shortVersionString>0.3.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/mahirozdin/SmartClose/releases/download/v0.3.0/SmartClose-0.3.0.zip" length="2177553" type="application/octet-stream" sparkle:edSignature="rQf+UqumSg+ZlKtnmvnyhGyKdwdKONcZGO5dtoI6NbIcAki8rnwdCmPT/b2DR8zkb2exYxml7ke2IQ5ay1T8Cg=="/>
+        </item>
+    </channel>
+</rss>
