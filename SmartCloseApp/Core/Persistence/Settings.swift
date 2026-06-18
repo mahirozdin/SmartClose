@@ -98,6 +98,14 @@ struct Settings: Codable, Equatable {
     var debugLoggingLevel: DebugLoggingLevel
     var showMenuBarIcon: Bool
     var onboardingProgress: OnboardingProgress
+    /// Optional, experimental: also apply smart-close behavior to the Cmd+W shortcut.
+    /// Off by default — see issue #1.
+    var enableCmdWHandling: Bool
+    /// Seconds to wait after a Cmd+W keystroke before re-checking the window count.
+    var cmdWVerifyDelay: Double
+    /// Per-app Cmd+W overrides (bundle id or wildcard -> enabled). Separate from
+    /// `perAppRules`, which governs the red close button.
+    var cmdWPerApp: [String: Bool]
 
     static let defaultIgnoredBundleIDs: [String] = []
 
@@ -116,7 +124,10 @@ struct Settings: Codable, Equatable {
         firstRunCompleted: false,
         debugLoggingLevel: .info,
         showMenuBarIcon: true,
-        onboardingProgress: .default
+        onboardingProgress: .default,
+        enableCmdWHandling: false,
+        cmdWVerifyDelay: 0.25,
+        cmdWPerApp: [:]
     )
 
     var isPaused: Bool {
@@ -142,6 +153,9 @@ extension Settings {
         case debugLoggingLevel
         case showMenuBarIcon
         case onboardingProgress
+        case enableCmdWHandling
+        case cmdWVerifyDelay
+        case cmdWPerApp
     }
 
     init(from decoder: Decoder) throws {
@@ -163,6 +177,9 @@ extension Settings {
         debugLoggingLevel = try container.decodeIfPresent(DebugLoggingLevel.self, forKey: .debugLoggingLevel) ?? defaults.debugLoggingLevel
         showMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? defaults.showMenuBarIcon
         onboardingProgress = try container.decodeIfPresent(OnboardingProgress.self, forKey: .onboardingProgress) ?? defaults.onboardingProgress
+        enableCmdWHandling = try container.decodeIfPresent(Bool.self, forKey: .enableCmdWHandling) ?? defaults.enableCmdWHandling
+        cmdWVerifyDelay = try container.decodeIfPresent(Double.self, forKey: .cmdWVerifyDelay) ?? defaults.cmdWVerifyDelay
+        cmdWPerApp = try container.decodeIfPresent([String: Bool].self, forKey: .cmdWPerApp) ?? defaults.cmdWPerApp
     }
 
     func encode(to encoder: Encoder) throws {
@@ -182,5 +199,8 @@ extension Settings {
         try container.encode(debugLoggingLevel, forKey: .debugLoggingLevel)
         try container.encode(showMenuBarIcon, forKey: .showMenuBarIcon)
         try container.encode(onboardingProgress, forKey: .onboardingProgress)
+        try container.encode(enableCmdWHandling, forKey: .enableCmdWHandling)
+        try container.encode(cmdWVerifyDelay, forKey: .cmdWVerifyDelay)
+        try container.encode(cmdWPerApp, forKey: .cmdWPerApp)
     }
 }

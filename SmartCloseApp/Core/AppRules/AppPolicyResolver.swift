@@ -13,12 +13,23 @@ struct ResolvedPolicy {
 }
 
 final class AppPolicyResolver {
-    private let hardExcludedBundleIDs: [String] = [
-        "com.apple.finder",
-        "com.apple.dock",
-        "com.apple.loginwindow",
-        "com.apple.systemuiserver"
-    ]
+    private let hardExcludedBundleIDs: [String]
+
+    /// - Parameter selfBundleID: SmartClose's own bundle identifier. It is added to the
+    ///   hard-exclusion list so closing SmartClose's own window can never quit the app.
+    ///   Defaults to the running bundle id; injectable for tests.
+    init(selfBundleID: String? = Bundle.main.bundleIdentifier) {
+        var ids = [
+            "com.apple.finder",
+            "com.apple.dock",
+            "com.apple.loginwindow",
+            "com.apple.systemuiserver"
+        ]
+        if let selfBundleID, !selfBundleID.isEmpty {
+            ids.append(selfBundleID)
+        }
+        hardExcludedBundleIDs = ids
+    }
 
     func resolve(bundleID: String, settings: Settings) -> ResolvedPolicy {
         if matchesAny(patterns: hardExcludedBundleIDs, bundleID: bundleID) {
@@ -66,6 +77,35 @@ final class AppPolicyResolver {
         case .disabled:
             return ResolvedPolicy(behavior: .disabled, matchedRule: matchedRule, isExcluded: true)
         }
+    }
+
+    /// Whether the optional Cmd+W handling should consider acting for this app.
+    /// Returns false unless the global toggle is on, and always false for hard-excluded
+    /// (incl. SmartClose itself), allow-list-rejected, or ignore-listed apps. A per-app
+    /// `cmdWPerApp` override (exact, then longest wildcard) wins; otherwise defaults to true.
+    func cmdWEnabled(bundleID: String, settings: Settings) -> Bool {
+        guard settings.enableCmdWHandling else { return false }
+
+        if matchesAny(patterns: hardExcludedBundleIDs, bundleID: bundleID) {
+            return false
+        }
+        if settings.useAllowList, !matchesAny(patterns: settings.allowedBundleIDs, bundleID: bundleID) {
+            return false
+        }
+        if matchesAny(patterns: settings.ignoredBundleIDs, bundleID: bundleID) {
+            return false
+        }
+
+        if let exact = settings.cmdWPerApp[bundleID] {
+            return exact
+        }
+        let wildcardMatches = settings.cmdWPerApp
+            .filter { WildcardMatcher.matches(pattern: $0.key, value: bundleID) }
+            .sorted { $0.key.count > $1.key.count }
+        if let wildcard = wildcardMatches.first {
+            return wildcard.value
+        }
+        return true
     }
 
     private func matchesAny(patterns: [String], bundleID: String) -> Bool {

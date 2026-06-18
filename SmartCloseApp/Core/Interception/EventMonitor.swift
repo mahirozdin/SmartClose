@@ -18,7 +18,7 @@ enum EventMonitorError: Error, Equatable {
 }
 
 final class EventMonitor {
-    typealias Handler = (CGEvent) -> EventDisposition
+    typealias Handler = (CGEventType, CGEvent) -> EventDisposition
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
@@ -33,7 +33,9 @@ final class EventMonitor {
         self.handler = handler
         Log.interception.info("Event monitor start requested")
 
-        let eventMask = (1 << CGEventType.leftMouseDown.rawValue) | (1 << CGEventType.leftMouseUp.rawValue)
+        let eventMask = (1 << CGEventType.leftMouseDown.rawValue)
+            | (1 << CGEventType.leftMouseUp.rawValue)
+            | (1 << CGEventType.keyDown.rawValue)
 
         let callback: CGEventTapCallBack = { proxy, type, event, userInfo in
             guard let userInfo else { return Unmanaged.passRetained(event) }
@@ -101,13 +103,20 @@ final class EventMonitor {
             return Unmanaged.passRetained(event)
         }
 
+        // Keyboard events are only ever observed (e.g. optional Cmd+W handling); we never
+        // swallow a keystroke, so the app always handles it normally first.
+        if type == .keyDown {
+            _ = handler?(.keyDown, event)
+            return Unmanaged.passRetained(event)
+        }
+
         if type == .leftMouseUp, swallowNextMouseUp {
             swallowNextMouseUp = false
             return nil
         }
 
         if type == .leftMouseDown {
-            if handler?(event) == .swallow {
+            if handler?(.leftMouseDown, event) == .swallow {
                 swallowNextMouseUp = true
                 return nil
             }

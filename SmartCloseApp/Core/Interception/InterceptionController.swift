@@ -2,7 +2,10 @@ import AppKit
 import ApplicationServices
 import Foundation
 
-final class InterceptionController {
+// All stored dependencies are immutable `let` references already shared with the event-tap
+// thread; the controller holds no mutable state of its own, so it is safe to hand to the
+// main-actor verification closure used by the optional Cmd+W path.
+final class InterceptionController: @unchecked Sendable {
     private let settingsStore: SettingsStore
     private let eventMonitor: EventMonitor
     private let axInspector: AXInspecting
@@ -11,6 +14,7 @@ final class InterceptionController {
     private let policyResolver: AppPolicyResolver
     private let actionExecutor: ActionExecutor
     private let diagnosticsStore: DiagnosticsStore
+    private let selfBundleID = Bundle.main.bundleIdentifier
 
     init(
         settingsStore: SettingsStore,
@@ -34,8 +38,8 @@ final class InterceptionController {
 
     @discardableResult
     func start() -> Result<Void, EventMonitorError> {
-        eventMonitor.start { [weak self] event in
-            self?.handle(event: event) ?? .passThrough
+        eventMonitor.start { [weak self] type, event in
+            self?.handle(type: type, event: event) ?? .passThrough
         }
     }
 
@@ -43,7 +47,15 @@ final class InterceptionController {
         eventMonitor.stop()
     }
 
-    private func handle(event: CGEvent) -> EventDisposition {
+    private func handle(type: CGEventType, event: CGEvent) -> EventDisposition {
+        if type == .keyDown {
+            handleKeyDown(event: event)
+            return .passThrough
+        }
+        return handleCloseButton(event: event)
+    }
+
+    private func handleCloseButton(event: CGEvent) -> EventDisposition {
         let settings = settingsStore.settings
         let logVerbose = settings.debugLoggingLevel == .verbose
         let logInfo = settings.debugLoggingLevel == .info || settings.debugLoggingLevel == .verbose
@@ -148,6 +160,86 @@ final class InterceptionController {
             actionTaken: "Passed through"
         )
         return .passThrough
+    }
+
+    /// `kVK_ANSI_W` — the virtual key code for the W key.
+    private static let wKeyCode: Int64 = 13
+
+    /// Optional, experimental Cmd+W path (issue #1). The keystroke is never swallowed; we
+    /// let the frontmost app close its own window, then re-check the window count after a
+    /// short delay and request a normal quit only if the last normal window is gone.
+    private func handleKeyDown(event: CGEvent) {
+        // Cheap event checks first — this runs for every keystroke, so avoid copying
+        // settings until we know it is actually a plain Cmd+W.
+        guard event.getIntegerValueField(.keyboardEventAutorepeat) == 0 else { return }
+        guard event.getIntegerValueField(.keyboardEventKeycode) == Self.wKeyCode else { return }
+        let flags = event.flags
+        guard flags.contains(.maskCommand),
+              !flags.contains(.maskShift),
+              !flags.contains(.maskAlternate),
+              !flags.contains(.maskControl) else { return }
+
+        let settings = settingsStore.settings
+        guard settings.isEnabled, !settings.isPaused, settings.enableCmdWHandling else { return }
+
+        guard let app = NSWorkspace.shared.frontmostApplication,
+              let bundleID = app.bundleIdentifier else { return }
+        let pid = app.processIdentifier
+
+        // Never act on SmartClose itself, and honor the resolved Cmd+W policy.
+        guard bundleID != selfBundleID else { return }
+        guard policyResolver.cmdWEnabled(bundleID: bundleID, settings: settings) else { return }
+
+        let delay = max(0.05, settings.cmdWVerifyDelay)
+        if settings.debugLoggingLevel == .info || settings.debugLoggingLevel == .verbose {
+            Log.interception.info("Cmd+W observed bundle=\(bundleID); verifying after \(delay)s")
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            self?.verifyAndMaybeQuitAfterCmdW(pid: pid, bundleID: bundleID, settings: settings)
+        }
+    }
+
+    private func verifyAndMaybeQuitAfterCmdW(pid: pid_t, bundleID: String, settings: Settings) {
+        guard let app = NSRunningApplication(processIdentifier: pid), !app.isTerminated else {
+            // The app already quit on its own — nothing to do.
+            return
+        }
+
+        let windowCountResult = windowCountingService.countWindows(for: pid, appIsHidden: app.isHidden, settings: settings)
+        let context = DecisionContext(
+            isEnabled: settings.isEnabled,
+            isPaused: settings.isPaused,
+            permissionGranted: true,
+            resolvedPolicy: policyResolver.resolve(bundleID: bundleID, settings: settings),
+            windowCount: windowCountResult
+        )
+
+        let decision = decisionEngine.decideAfterCmdW(context: context)
+        if settings.debugLoggingLevel == .info || settings.debugLoggingLevel == .verbose {
+            Log.interception.info("Cmd+W decision action=\(decision.action.rawValue) reason=\(decision.reason) bundle=\(bundleID)")
+        }
+
+        if decision.action == .requestQuit {
+            let success = actionExecutor.requestQuit(pid: pid)
+            logDecision(
+                app: app,
+                bundleID: bundleID,
+                decision: decision,
+                windowCount: windowCountResult?.count,
+                ignoredCount: windowCountResult?.ignoredCount,
+                actionTaken: success ? "Requested quit (Cmd+W)" : "Quit request failed (Cmd+W)"
+            )
+        } else {
+            logDecision(
+                app: app,
+                bundleID: bundleID,
+                decision: decision,
+                windowCount: windowCountResult?.count,
+                ignoredCount: windowCountResult?.ignoredCount,
+                actionTaken: "Passed through (Cmd+W)"
+            )
+        }
     }
 
     private func isCloseButton(element: AXUIElement) -> Bool {

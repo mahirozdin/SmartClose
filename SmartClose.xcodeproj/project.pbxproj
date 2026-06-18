@@ -44,6 +44,8 @@
 		E8ECF8007A6C46C2B83AC6B2 /* WindowCountingServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 507AA03A4D0F4EBFBC28051B /* WindowCountingServiceTests.swift */; };
 		EE43CFAE1C104956925E45E6 /* WindowClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0985A33FF2A9460E9F5AB82C /* WindowClassifier.swift */; };
 		F015373D516A4B9181D22286 /* DecisionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3332FEC90A4142AE834A9569 /* DecisionEngine.swift */; };
+		ACA7E700000000000000B17F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACA7E700000000000000F1EF /* Assets.xcassets */; };
+		5E7715C0DAB1E00000000002 /* SettingsCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7715C0DAB1E00000000001 /* SettingsCodableTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -106,6 +108,8 @@
 		E9C699AA66E24B5E8AFD4F6D /* EditableStringList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditableStringList.swift; sourceTree = "<group>"; };
 		EA1A1A94DFAB4A4CB16F5957 /* EventMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventMonitor.swift; sourceTree = "<group>"; };
 		EEFCD85DD4EB4800ABFAEE10 /* AppRulesEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRulesEditorView.swift; sourceTree = "<group>"; };
+		ACA7E700000000000000F1EF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		5E7715C0DAB1E00000000001 /* SettingsCodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCodableTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -151,6 +155,7 @@
 				7A84C24BE9004EB8857A6790 /* WindowClassifierTests.swift */,
 				CAAF2EBC3ABB429B90D6ACF5 /* MockAXInspector.swift */,
 				507AA03A4D0F4EBFBC28051B /* WindowCountingServiceTests.swift */,
+				5E7715C0DAB1E00000000001 /* SettingsCodableTests.swift */,
 			);
 			path = SmartCloseTests;
 			sourceTree = "<group>";
@@ -214,6 +219,7 @@
 		70FA8060F29C4245B5CDDF76 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				ACA7E700000000000000F1EF /* Assets.xcassets */,
 				CAA19F8B53704F37BF51829B /* Info.plist */,
 				D0A1B2C3D4E5F60718293A4B /* Info-Debug.plist */,
 			);
@@ -443,6 +449,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ACA7E700000000000000B17F /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -459,6 +466,7 @@
 				A4C9A8D5197B451CB2A3C532 /* WindowClassifierTests.swift in Sources */,
 				B28268FB6CEE456E9121F7DF /* MockAXInspector.swift in Sources */,
 				E8ECF8007A6C46C2B83AC6B2 /* WindowCountingServiceTests.swift in Sources */,
+				5E7715C0DAB1E00000000002 /* SettingsCodableTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -526,9 +534,9 @@
 		12F90592835B4A48BBFB22E0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = WWRZ5CG3DW;
 				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = "SmartCloseApp/Resources/Info-Debug.plist";
@@ -537,7 +545,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.2.0;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartclose.app;
 				PRODUCT_NAME = SmartClose;
@@ -596,9 +604,9 @@
 		861B469580394A679A952EA8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = WWRZ5CG3DW;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = SmartCloseApp/Resources/Info.plist;
@@ -607,7 +615,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartclose.app;
 				PRODUCT_NAME = SmartClose;
 				SWIFT_VERSION = 6.0;

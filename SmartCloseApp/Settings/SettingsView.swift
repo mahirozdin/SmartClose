@@ -65,6 +65,13 @@ struct SettingsView: View {
                     }
                 }
 
+                VStack(alignment: .leading, spacing: 4) {
+                    Toggle("Handle Cmd+W (experimental)", isOn: settingsStore.binding(for: \.enableCmdWHandling))
+                    Text("Off by default. When on, SmartClose lets the app handle Cmd+W normally first, then quits it only if that closed its last normal window. Honors the ignore/allow lists and per-app rules.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
                 Toggle("Ignore minimized windows", isOn: settingsStore.binding(for: \.countMinimizedWindows).map { !$0 })
                 Toggle("Ignore hidden windows", isOn: settingsStore.binding(for: \.countHiddenWindows).map { !$0 })
 

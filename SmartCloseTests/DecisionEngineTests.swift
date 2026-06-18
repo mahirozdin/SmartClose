@@ -53,6 +53,52 @@ final class DecisionEngineTests: XCTestCase {
         let result = engine.decide(context: context)
         XCTAssertEqual(result.action, .passThrough)
     }
+
+    // MARK: - Cmd+W path (decideAfterCmdW)
+
+    private func cmdWContext(
+        isEnabled: Bool = true,
+        isPaused: Bool = false,
+        behavior: CloseBehavior = .smartClose,
+        isExcluded: Bool = false,
+        count: Int,
+        ambiguous: Bool = false
+    ) -> DecisionContext {
+        DecisionContext(
+            isEnabled: isEnabled,
+            isPaused: isPaused,
+            permissionGranted: true,
+            resolvedPolicy: ResolvedPolicy(behavior: behavior, matchedRule: nil, isExcluded: isExcluded),
+            windowCount: WindowCountResult(count: count, ambiguous: ambiguous, ignoredCount: 0, reasons: [])
+        )
+    }
+
+    func testCmdWQuitsWhenLastWindowGone() {
+        let engine = DecisionEngine()
+        let result = engine.decideAfterCmdW(context: cmdWContext(count: 0))
+        XCTAssertEqual(result.action, .requestQuit)
+    }
+
+    func testCmdWPassesThroughWhenWindowsRemain() {
+        // The Cmd+W path must NOT reuse the count == 1 logic of the close-button path.
+        let engine = DecisionEngine()
+        XCTAssertEqual(engine.decideAfterCmdW(context: cmdWContext(count: 1)).action, .passThrough)
+        XCTAssertEqual(engine.decideAfterCmdW(context: cmdWContext(count: 2)).action, .passThrough)
+    }
+
+    func testCmdWPassesThroughWhenAmbiguous() {
+        let engine = DecisionEngine()
+        let result = engine.decideAfterCmdW(context: cmdWContext(count: 0, ambiguous: true))
+        XCTAssertEqual(result.action, .passThrough)
+    }
+
+    func testCmdWRespectsDisabledPausedAndPolicy() {
+        let engine = DecisionEngine()
+        XCTAssertEqual(engine.decideAfterCmdW(context: cmdWContext(isEnabled: false, count: 0)).action, .passThrough)
+        XCTAssertEqual(engine.decideAfterCmdW(context: cmdWContext(isPaused: true, count: 0)).action, .passThrough)
+        XCTAssertEqual(engine.decideAfterCmdW(context: cmdWContext(behavior: .disabled, isExcluded: true, count: 0)).action, .passThrough)
+        XCTAssertEqual(engine.decideAfterCmdW(context: cmdWContext(behavior: .alwaysNormalClose, count: 0)).action, .passThrough)
+    }
 }
 
 @MainActor

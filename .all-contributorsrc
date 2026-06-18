@@ -1,0 +1,36 @@
+{
+  "projectName": "SmartClose",
+  "projectOwner": "mahirozdin",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "angular",
+  "contributorsPerLine": 7,
+  "contributors": [
+    {
+      "login": "mahirozdin",
+      "name": "Mahir Taha Özdin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9491185?v=4",
+      "profile": "https://github.com/mahirozdin",
+      "contributions": [
+        "code",
+        "doc",
+        "maintenance",
+        "design"
+      ]
+    },
+    {
+      "login": "sohate",
+      "name": "sohate",
+      "avatar_url": "https://avatars.githubusercontent.com/u/81889148?v=4",
+      "profile": "https://github.com/sohate",
+      "contributions": [
+        "ideas"
+      ]
+    }
+  ]
+}
