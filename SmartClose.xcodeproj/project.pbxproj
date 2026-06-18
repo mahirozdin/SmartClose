@@ -46,6 +46,7 @@
 		F015373D516A4B9181D22286 /* DecisionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3332FEC90A4142AE834A9569 /* DecisionEngine.swift */; };
 		ACA7E700000000000000B17F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACA7E700000000000000F1EF /* Assets.xcassets */; };
 		5E7715C0DAB1E00000000002 /* SettingsCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7715C0DAB1E00000000001 /* SettingsCodableTests.swift */; };
+		5A8B1E00000000000000F11E /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 5A8B1E00000000000000D00D /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -131,6 +132,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A8B1E00000000000000F11E /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -379,6 +381,9 @@
 			);
 			dependencies = (
 			);
+			packageProductDependencies = (
+				5A8B1E00000000000000D00D /* Sparkle */,
+			);
 			name = SmartClose;
 			productName = SmartClose;
 			productReference = 9124DFEA154B43C382B07664 /* SmartClose.app */;
@@ -433,6 +438,9 @@
 				Base,
 			);
 			mainGroup = FCBC8C9A5587447CA81A73EF;
+			packageReferences = (
+				5A8B1E00000000000000B1EF /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			productRefGroup = FA2727789D4B47C5BF82F011 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -536,7 +544,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = WWRZ5CG3DW;
 				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = "SmartCloseApp/Resources/Info-Debug.plist";
@@ -545,7 +553,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.3.0;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartclose.app;
 				PRODUCT_NAME = SmartClose;
@@ -606,7 +614,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = WWRZ5CG3DW;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = SmartCloseApp/Resources/Info.plist;
@@ -615,7 +623,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartclose.app;
 				PRODUCT_NAME = SmartClose;
 				SWIFT_VERSION = 6.0;
@@ -685,6 +693,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		5A8B1E00000000000000B1EF /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5A8B1E00000000000000D00D /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5A8B1E00000000000000B1EF /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9C7FEB9FE5EE497183CA42C8 /* Project object */;
 }

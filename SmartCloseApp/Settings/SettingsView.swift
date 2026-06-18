@@ -5,6 +5,7 @@ struct SettingsView: View {
     @EnvironmentObject var settingsStore: SettingsStore
     @EnvironmentObject var permissionManager: PermissionManager
     @EnvironmentObject var inputMonitoringManager: InputMonitoringManager
+    @EnvironmentObject var updaterBridge: UpdaterBridge
 
     private let refreshTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -58,6 +59,10 @@ struct SettingsView: View {
                 Toggle("Enable SmartClose", isOn: settingsStore.binding(for: \.isEnabled))
                 Toggle("Launch at login", isOn: settingsStore.binding(for: \.launchAtLogin))
                 Toggle("Show menu bar icon", isOn: settingsStore.binding(for: \.showMenuBarIcon))
+                Toggle("Automatically check for updates", isOn: Binding(
+                    get: { updaterBridge.automaticallyChecksForUpdates },
+                    set: { updaterBridge.automaticallyChecksForUpdates = $0 }
+                ))
 
                 Picker("Global mode", selection: settingsStore.binding(for: \.globalMode)) {
                     ForEach(GlobalMode.allCases) { mode in

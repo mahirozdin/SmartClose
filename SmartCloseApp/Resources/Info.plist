@@ -26,5 +26,11 @@
     <true/>
     <key>NSHighResolutionCapable</key>
     <true/>
+    <key>SUEnableAutomaticChecks</key>
+    <true/>
+    <key>SUFeedURL</key>
+    <string>https://raw.githubusercontent.com/mahirozdin/SmartClose/main/appcast.xml</string>
+    <key>SUPublicEDKey</key>
+    <string>XEWYvX1cj3qpS8yul5LnA7EpgoVTR10jdwMGudeKrXQ=</string>
 </dict>
 </plist>

@@ -1,4 +1,5 @@
 import AppKit
+import Sparkle
 import SwiftUI
 
 @MainActor
@@ -10,15 +11,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var diagnosticsWindowController: HostingWindowController?
     private var onboardingWindowController: HostingWindowController?
 
+    private var updaterController: SPUStandardUpdaterController?
+    private var updaterBridge: UpdaterBridge!
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         let isFirstRun = !appModel.settingsStore.settings.firstRunCompleted
         Log.app.info("App did finish launching. firstRun=\(isFirstRun)")
         NSApp.setActivationPolicy(isFirstRun ? .regular : .accessory)
 
+        // Sparkle auto-updates. Starts checking on launch; shows its own first-run consent prompt.
+        let updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+        self.updaterController = updaterController
+        updaterBridge = UpdaterBridge(updater: updaterController.updater)
+
         statusMenuController = StatusMenuController(
             settingsStore: appModel.settingsStore,
             onOpenSettings: { [weak self] in self?.openSettings() },
             onShowDiagnostics: { [weak self] in self?.openDiagnostics() },
+            onCheckForUpdates: { [weak self] in self?.updaterController?.checkForUpdates(nil) },
             onQuit: { NSApp.terminate(nil) }
         )
 
@@ -36,6 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .environmentObject(appModel.settingsStore)
             .environmentObject(appModel.permissionManager)
             .environmentObject(appModel.inputMonitoringManager)
+            .environmentObject(updaterBridge)
         if settingsWindowController == nil {
             settingsWindowController = HostingWindowController(title: "SmartClose Settings", rootView: AnyView(view))
         }
@@ -82,5 +93,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         true
+    }
+}
+
+/// Bridges Sparkle's "automatically check for updates" preference into SwiftUI so the
+/// Settings window can toggle it. Sparkle persists the value itself.
+@MainActor
+final class UpdaterBridge: ObservableObject {
+    private let updater: SPUUpdater
+
+    init(updater: SPUUpdater) {
+        self.updater = updater
+    }
+
+    var automaticallyChecksForUpdates: Bool {
+        get { updater.automaticallyChecksForUpdates }
+        set {
+            objectWillChange.send()
+            updater.automaticallyChecksForUpdates = newValue
+        }
     }
 }

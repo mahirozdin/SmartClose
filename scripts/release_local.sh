@@ -111,7 +111,33 @@ xcrun stapler staple "${DMG_PATH}"
 echo "==> Writing checksums"
 shasum -a 256 "${ZIP_PATH}" "${DMG_PATH}" > "${CHECKSUM_PATH}"
 
+echo "==> Generating Sparkle appcast"
+APPCAST_PATH="${DIST_DIR}/appcast.xml"
+DOWNLOAD_URL_PREFIX="${SMARTCLOSE_DOWNLOAD_URL_PREFIX:-https://github.com/mahirozdin/SmartClose/releases/download/v${VERSION}/}"
+GENERATE_APPCAST="$(find "${ROOT_DIR}/build" -path '*sparkle/Sparkle/bin/generate_appcast' -type f 2>/dev/null | head -n 1)"
+if [[ -z "${GENERATE_APPCAST}" ]]; then
+  echo "warning: generate_appcast not found under ${ROOT_DIR}/build. Run 'xcodebuild -resolvePackageDependencies' first; skipping appcast." >&2
+else
+  # generate_appcast signs with the EdDSA private key in your login keychain and writes
+  # appcast.xml whose enclosure URL points at the release asset. Feed it only the ZIP so
+  # the DMG in DIST_DIR is not turned into a second update entry.
+  APPCAST_SRC="$(mktemp -d "${TMPDIR:-/tmp}/smartclose-appcast.XXXXXX")"
+  cp "${ZIP_PATH}" "${APPCAST_SRC}/"
+  if "${GENERATE_APPCAST}" --download-url-prefix "${DOWNLOAD_URL_PREFIX}" "${APPCAST_SRC}"; then
+    cp "${APPCAST_SRC}/appcast.xml" "${APPCAST_PATH}"
+    cp "${APPCAST_SRC}/appcast.xml" "${ROOT_DIR}/appcast.xml"
+  else
+    echo "warning: generate_appcast failed; appcast not updated." >&2
+    APPCAST_PATH=""
+  fi
+  rm -rf "${APPCAST_SRC}"
+fi
+
 echo "==> Release artifacts ready"
 echo "ZIP: ${ZIP_PATH}"
 echo "DMG: ${DMG_PATH}"
 echo "SHA256: ${CHECKSUM_PATH}"
+if [[ -n "${APPCAST_PATH}" && -f "${ROOT_DIR}/appcast.xml" ]]; then
+  echo "Appcast: ${ROOT_DIR}/appcast.xml"
+  echo "NOTE: after publishing the GitHub release assets, commit & push appcast.xml so installed apps can update."
+fi

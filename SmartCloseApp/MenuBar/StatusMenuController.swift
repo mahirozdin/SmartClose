@@ -9,6 +9,7 @@ final class StatusMenuController {
 
     private let onOpenSettings: () -> Void
     private let onShowDiagnostics: () -> Void
+    private let onCheckForUpdates: () -> Void
     private let onQuit: () -> Void
 
     private var enabledItem: NSMenuItem!
@@ -19,11 +20,13 @@ final class StatusMenuController {
         settingsStore: SettingsStore,
         onOpenSettings: @escaping () -> Void,
         onShowDiagnostics: @escaping () -> Void,
+        onCheckForUpdates: @escaping () -> Void,
         onQuit: @escaping () -> Void
     ) {
         self.settingsStore = settingsStore
         self.onOpenSettings = onOpenSettings
         self.onShowDiagnostics = onShowDiagnostics
+        self.onCheckForUpdates = onCheckForUpdates
         self.onQuit = onQuit
 
         configureStatusItem()
@@ -74,6 +77,10 @@ final class StatusMenuController {
         diagnosticsItem.target = self
         menu.addItem(diagnosticsItem)
 
+        let updatesItem = NSMenuItem(title: "Check for Updates…", action: #selector(checkForUpdates), keyEquivalent: "")
+        updatesItem.target = self
+        menu.addItem(updatesItem)
+
         menu.addItem(.separator())
 
         let quitItem = NSMenuItem(title: "Quit SmartClose", action: #selector(quitApp), keyEquivalent: "q")
@@ -113,6 +120,10 @@ final class StatusMenuController {
 
     @objc private func showDiagnostics() {
         onShowDiagnostics()
+    }
+
+    @objc private func checkForUpdates() {
+        onCheckForUpdates()
     }
 
     @objc private func quitApp() {
