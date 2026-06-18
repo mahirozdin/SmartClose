@@ -56,48 +56,65 @@ final class DecisionEngineTests: XCTestCase {
 
     // MARK: - Cmd+W path (decideAfterCmdW)
 
-    private func cmdWContext(
+    private func windowCount(_ count: Int, ambiguous: Bool = false) -> WindowCountResult {
+        WindowCountResult(count: count, ambiguous: ambiguous, ignoredCount: 0, reasons: [])
+    }
+
+    private func decideCmdW(
         isEnabled: Bool = true,
         isPaused: Bool = false,
         behavior: CloseBehavior = .smartClose,
         isExcluded: Bool = false,
-        count: Int,
-        ambiguous: Bool = false
-    ) -> DecisionContext {
-        DecisionContext(
+        before: WindowCountResult?,
+        after: WindowCountResult?
+    ) -> DecisionResult {
+        DecisionEngine().decideAfterCmdW(
             isEnabled: isEnabled,
             isPaused: isPaused,
             permissionGranted: true,
             resolvedPolicy: ResolvedPolicy(behavior: behavior, matchedRule: nil, isExcluded: isExcluded),
-            windowCount: WindowCountResult(count: count, ambiguous: ambiguous, ignoredCount: 0, reasons: [])
+            windowsBefore: before,
+            windowsAfter: after
         )
     }
 
-    func testCmdWQuitsWhenLastWindowGone() {
-        let engine = DecisionEngine()
-        let result = engine.decideAfterCmdW(context: cmdWContext(count: 0))
+    // Regression test for issue #3: an app with no windows reports count 0, but the window
+    // counter flags that result `ambiguous` ("No windows returned"). The Cmd+W path must still
+    // quit — it was passing through on the ambiguous flag, so Cmd+W never quit any app.
+    func testCmdWQuitsWhenLastWindowGoneEvenThoughAfterCountIsAmbiguous() {
+        let result = decideCmdW(before: windowCount(1), after: windowCount(0, ambiguous: true))
         XCTAssertEqual(result.action, .requestQuit)
     }
 
-    func testCmdWPassesThroughWhenWindowsRemain() {
-        // The Cmd+W path must NOT reuse the count == 1 logic of the close-button path.
-        let engine = DecisionEngine()
-        XCTAssertEqual(engine.decideAfterCmdW(context: cmdWContext(count: 1)).action, .passThrough)
-        XCTAssertEqual(engine.decideAfterCmdW(context: cmdWContext(count: 2)).action, .passThrough)
+    func testCmdWQuitsWhenLastWindowGone() {
+        XCTAssertEqual(decideCmdW(before: windowCount(1), after: windowCount(0)).action, .requestQuit)
     }
 
-    func testCmdWPassesThroughWhenAmbiguous() {
-        let engine = DecisionEngine()
-        let result = engine.decideAfterCmdW(context: cmdWContext(count: 0, ambiguous: true))
-        XCTAssertEqual(result.action, .passThrough)
+    func testCmdWPassesThroughWhenWindowStillOpen() {
+        XCTAssertEqual(decideCmdW(before: windowCount(1), after: windowCount(1)).action, .passThrough)
+        XCTAssertEqual(decideCmdW(before: windowCount(1), after: windowCount(2)).action, .passThrough)
+    }
+
+    func testCmdWNotArmedUnlessExactlyOneConfidentWindowBefore() {
+        // Multiple windows before → Cmd+W only closed a secondary window; never quit.
+        XCTAssertEqual(decideCmdW(before: windowCount(2), after: windowCount(0)).action, .passThrough)
+        // No window before → nothing to close.
+        XCTAssertEqual(decideCmdW(before: windowCount(0), after: windowCount(0)).action, .passThrough)
+        // Ambiguous before → not confident there was a single normal window.
+        XCTAssertEqual(decideCmdW(before: windowCount(1, ambiguous: true), after: windowCount(0)).action, .passThrough)
+        // Missing before.
+        XCTAssertEqual(decideCmdW(before: nil, after: windowCount(0)).action, .passThrough)
+    }
+
+    func testCmdWPassesThroughWhenAfterCountUnavailable() {
+        XCTAssertEqual(decideCmdW(before: windowCount(1), after: nil).action, .passThrough)
     }
 
     func testCmdWRespectsDisabledPausedAndPolicy() {
-        let engine = DecisionEngine()
-        XCTAssertEqual(engine.decideAfterCmdW(context: cmdWContext(isEnabled: false, count: 0)).action, .passThrough)
-        XCTAssertEqual(engine.decideAfterCmdW(context: cmdWContext(isPaused: true, count: 0)).action, .passThrough)
-        XCTAssertEqual(engine.decideAfterCmdW(context: cmdWContext(behavior: .disabled, isExcluded: true, count: 0)).action, .passThrough)
-        XCTAssertEqual(engine.decideAfterCmdW(context: cmdWContext(behavior: .alwaysNormalClose, count: 0)).action, .passThrough)
+        XCTAssertEqual(decideCmdW(isEnabled: false, before: windowCount(1), after: windowCount(0)).action, .passThrough)
+        XCTAssertEqual(decideCmdW(isPaused: true, before: windowCount(1), after: windowCount(0)).action, .passThrough)
+        XCTAssertEqual(decideCmdW(behavior: .disabled, isExcluded: true, before: windowCount(1), after: windowCount(0)).action, .passThrough)
+        XCTAssertEqual(decideCmdW(behavior: .alwaysNormalClose, before: windowCount(1), after: windowCount(0)).action, .passThrough)
     }
 }
 
