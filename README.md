@@ -1,4 +1,10 @@
 # SmartClose - Ultimate MacOS App Closing Solution.
+
+<!-- Drop a short screen recording named example.gif in the repo root; it will render here automatically. -->
+![SmartClose in action](example.gif)
+
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors)
+
 I created SmartClose because, recently, There are many new macos users arround and My self also switching between Windows and macOs too often, and I find it really annoying that when I click the red close button on the last window of an app, the app doesn't quit. So I made SmartClose to fix this issue.
 
 ** Basic idea: If you click the red close button on the last normal window of an app, SmartClose politely quits the app. If there are multiple windows, it just closes the one you clicked. If anything is ambiguous, it does nothing. **
@@ -52,8 +58,22 @@ Each release also includes a notarized ZIP of the same app bundle and a SHA-256 
 - Ignore list and allow list with `*` wildcard support
 - Per-app policies: default, always normal close, always quit on last window, disabled
 - Hidden and minimized window handling toggles
+- Optional Cmd+W handling (experimental, off by default) — see below
 - Pause mode
 - Launch at login
+
+### Cmd+W handling (experimental)
+
+By default SmartClose only reacts to the red close button. You can optionally
+enable the same smart-close behavior for the `Cmd+W` shortcut from **Settings →
+Behavior → Handle Cmd+W (experimental)**.
+
+It is intentionally conservative and **off by default**, because `Cmd+W` also
+closes tabs, documents, and editor panes in many apps. When enabled, SmartClose
+never intercepts the keystroke: it lets the app handle `Cmd+W` normally first,
+then re-checks the window count a moment later and requests a normal quit only if
+that actually closed the app's last normal window. It honors the ignore/allow
+lists and per-app rules, and never acts on SmartClose itself.
 
 ## Permissions
 
@@ -84,6 +104,29 @@ The repository includes:
 - [FAQ](/Volumes/DevSSD/HomeCache/mahirtahaozdin/Documents/NormalQuit/docs/faq.md)
 - [Contributing](/Volumes/DevSSD/HomeCache/mahirtahaozdin/Documents/NormalQuit/CONTRIBUTING.md)
 - [Changelog](/Volumes/DevSSD/HomeCache/mahirtahaozdin/Documents/NormalQuit/CHANGELOG.md)
+
+## Contributors
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/mahirozdin"><img src="https://avatars.githubusercontent.com/u/9491185?v=4?s=100" width="100px;" alt="Mahir Taha Özdin"/><br /><sub><b>Mahir Taha Özdin</b></sub></a><br /><a href="https://github.com/mahirozdin/SmartClose/commits?author=mahirozdin" title="Code">💻</a> <a href="https://github.com/mahirozdin/SmartClose/commits?author=mahirozdin" title="Documentation">📖</a> <a href="#maintenance-mahirozdin" title="Maintenance">🚧</a> <a href="#design-mahirozdin" title="Design">🎨</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/sohate"><img src="https://avatars.githubusercontent.com/u/81889148?v=4?s=100" width="100px;" alt="sohate"/><br /><sub><b>sohate</b></sub></a><br /><a href="#ideas-sohate" title="Ideas, Planning, & Feedback">🤔</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind — code, ideas, docs, bug reports — are welcome!
 
 ## Privacy
 
