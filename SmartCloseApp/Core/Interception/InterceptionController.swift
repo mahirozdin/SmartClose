@@ -190,32 +190,44 @@ final class InterceptionController: @unchecked Sendable {
         guard bundleID != selfBundleID else { return }
         guard policyResolver.cmdWEnabled(bundleID: bundleID, settings: settings) else { return }
 
+        // Count windows BEFORE the app handles Cmd+W. The keystroke has only been observed
+        // (the event tap runs before delivery), so the target window is still open here. Only
+        // arm when there is exactly one confidently-classified normal window — a plausible
+        // "last window" — otherwise Cmd+W is just closing a tab/secondary window and we leave
+        // it alone.
+        let windowsBefore = windowCountingService.countWindows(for: pid, appIsHidden: app.isHidden, settings: settings)
+        guard let windowsBefore, windowsBefore.count == 1, !windowsBefore.ambiguous else {
+            if settings.debugLoggingLevel == .verbose {
+                Log.interception.debug("Cmd+W not armed bundle=\(bundleID) before=\(windowsBefore?.count ?? -1) ambiguous=\(windowsBefore?.ambiguous ?? true)")
+            }
+            return
+        }
+
         let delay = max(0.05, settings.cmdWVerifyDelay)
         if settings.debugLoggingLevel == .info || settings.debugLoggingLevel == .verbose {
-            Log.interception.info("Cmd+W observed bundle=\(bundleID); verifying after \(delay)s")
+            Log.interception.info("Cmd+W armed bundle=\(bundleID); verifying after \(delay)s")
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
-            self?.verifyAndMaybeQuitAfterCmdW(pid: pid, bundleID: bundleID, settings: settings)
+            self?.verifyAndMaybeQuitAfterCmdW(pid: pid, bundleID: bundleID, windowsBefore: windowsBefore, settings: settings)
         }
     }
 
-    private func verifyAndMaybeQuitAfterCmdW(pid: pid_t, bundleID: String, settings: Settings) {
+    private func verifyAndMaybeQuitAfterCmdW(pid: pid_t, bundleID: String, windowsBefore: WindowCountResult, settings: Settings) {
         guard let app = NSRunningApplication(processIdentifier: pid), !app.isTerminated else {
             // The app already quit on its own — nothing to do.
             return
         }
 
-        let windowCountResult = windowCountingService.countWindows(for: pid, appIsHidden: app.isHidden, settings: settings)
-        let context = DecisionContext(
+        let windowsAfter = windowCountingService.countWindows(for: pid, appIsHidden: app.isHidden, settings: settings)
+        let decision = decisionEngine.decideAfterCmdW(
             isEnabled: settings.isEnabled,
             isPaused: settings.isPaused,
             permissionGranted: true,
             resolvedPolicy: policyResolver.resolve(bundleID: bundleID, settings: settings),
-            windowCount: windowCountResult
+            windowsBefore: windowsBefore,
+            windowsAfter: windowsAfter
         )
-
-        let decision = decisionEngine.decideAfterCmdW(context: context)
         if settings.debugLoggingLevel == .info || settings.debugLoggingLevel == .verbose {
             Log.interception.info("Cmd+W decision action=\(decision.action.rawValue) reason=\(decision.reason) bundle=\(bundleID)")
         }
@@ -226,8 +238,8 @@ final class InterceptionController: @unchecked Sendable {
                 app: app,
                 bundleID: bundleID,
                 decision: decision,
-                windowCount: windowCountResult?.count,
-                ignoredCount: windowCountResult?.ignoredCount,
+                windowCount: windowsAfter?.count,
+                ignoredCount: windowsAfter?.ignoredCount,
                 actionTaken: success ? "Requested quit (Cmd+W)" : "Quit request failed (Cmd+W)"
             )
         } else {
@@ -235,8 +247,8 @@ final class InterceptionController: @unchecked Sendable {
                 app: app,
                 bundleID: bundleID,
                 decision: decision,
-                windowCount: windowCountResult?.count,
-                ignoredCount: windowCountResult?.ignoredCount,
+                windowCount: windowsAfter?.count,
+                ignoredCount: windowsAfter?.ignoredCount,
                 actionTaken: "Passed through (Cmd+W)"
             )
         }

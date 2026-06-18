@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.1
+- Fix: optional Cmd+W handling never quit any app (#3). When an app's last window closed, the window count came back 0 but flagged "ambiguous", which suppressed the quit. SmartClose now counts windows just before Cmd+W and, when there was exactly one normal window that is then gone, requests the quit reliably.
+
 ## 0.3.0
 - Add automatic updates via [Sparkle](https://sparkle-project.org). SmartClose now checks for new releases and can download/install them in the background; a "Check for Updates…" menu item and an "Automatically check for updates" setting are included. (Existing 0.2.0 users update to 0.3.0 manually once; updates are automatic from 0.3.0 onward.)
 
