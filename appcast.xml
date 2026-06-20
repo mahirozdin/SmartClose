@@ -3,12 +3,12 @@
     <channel>
         <title>SmartClose</title>
         <item>
-            <title>0.3.1</title>
-            <pubDate>Fri, 19 Jun 2026 01:36:51 +0300</pubDate>
-            <sparkle:version>4</sparkle:version>
-            <sparkle:shortVersionString>0.3.1</sparkle:shortVersionString>
+            <title>0.3.2</title>
+            <pubDate>Sat, 20 Jun 2026 03:17:30 +0300</pubDate>
+            <sparkle:version>5</sparkle:version>
+            <sparkle:shortVersionString>0.3.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/mahirozdin/SmartClose/releases/download/v0.3.1/SmartClose-0.3.1.zip" length="2178771" type="application/octet-stream" sparkle:edSignature="IyRooUaD3YgNKTgUptZJYwtmhKjzmEuUZTBz31IEX/l4c4iVtYpdbgZcfIDvAMMrfA5g8E4VZBf91tT5JgwrCw=="/>
+            <enclosure url="https://github.com/mahirozdin/SmartClose/releases/download/v0.3.2/SmartClose-0.3.2.zip" length="2179432" type="application/octet-stream" sparkle:edSignature="D4AVYTIiu6/XHsSCIuLvKeXaPbpIqZiCJolJ1Y+ZqZrD4o8qRWH+YEQ1zRtjDlDXW9YSP1hGRw1Duak3qeKSDw=="/>
         </item>
     </channel>
 </rss>
