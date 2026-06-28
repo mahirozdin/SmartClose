@@ -2,6 +2,28 @@ import AppKit
 import ApplicationServices
 import Foundation
 
+struct CmdWVerificationPolicy: Equatable {
+    let initialDelay: TimeInterval
+    let retryInterval: TimeInterval
+    let maxDuration: TimeInterval
+
+    init(
+        configuredInitialDelay: TimeInterval,
+        retryInterval: TimeInterval = 0.2,
+        maxDuration: TimeInterval = 1.0
+    ) {
+        initialDelay = max(0.05, configuredInitialDelay)
+        self.retryInterval = max(0.05, retryInterval)
+        self.maxDuration = max(initialDelay, maxDuration)
+    }
+
+    func nextDelay(afterElapsed elapsed: TimeInterval, latestResult: WindowCountResult?) -> TimeInterval? {
+        guard latestResult?.count != 0 else { return nil }
+        guard elapsed < maxDuration else { return nil }
+        return min(retryInterval, maxDuration - elapsed)
+    }
+}
+
 // All stored dependencies are immutable `let` references already shared with the event-tap
 // thread; the controller holds no mutable state of its own, so it is safe to hand to the
 // main-actor verification closure used by the optional Cmd+W path.
@@ -215,23 +237,41 @@ final class InterceptionController: @unchecked Sendable {
             return
         }
 
-        let delay = max(0.05, settings.cmdWVerifyDelay)
+        let verificationPolicy = CmdWVerificationPolicy(configuredInitialDelay: settings.cmdWVerifyDelay)
+        let delay = verificationPolicy.initialDelay
         if settings.debugLoggingLevel == .info || settings.debugLoggingLevel == .verbose {
             Log.interception.info("Cmd+W armed bundle=\(bundleID); verifying after \(delay)s")
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
-            self?.verifyAndMaybeQuitAfterCmdW(pid: pid, bundleID: bundleID, windowsBefore: windowsBefore, settings: settings)
+            self?.verifyAndMaybeQuitAfterCmdW(
+                pid: pid,
+                bundleID: bundleID,
+                windowsBefore: windowsBefore,
+                settings: settings,
+                verificationPolicy: verificationPolicy,
+                elapsed: delay,
+                samples: []
+            )
         }
     }
 
-    private func verifyAndMaybeQuitAfterCmdW(pid: pid_t, bundleID: String, windowsBefore: WindowCountResult, settings: Settings) {
+    private func verifyAndMaybeQuitAfterCmdW(
+        pid: pid_t,
+        bundleID: String,
+        windowsBefore: WindowCountResult,
+        settings: Settings,
+        verificationPolicy: CmdWVerificationPolicy,
+        elapsed: TimeInterval,
+        samples: [WindowCountResult?]
+    ) {
         guard let app = NSRunningApplication(processIdentifier: pid), !app.isTerminated else {
             // The app already quit on its own — nothing to do.
             return
         }
 
         let windowsAfter = windowCountingService.countWindows(for: pid, appIsHidden: app.isHidden, settings: settings)
+        let samples = samples + [windowsAfter]
         let decision = decisionEngine.decideAfterCmdW(
             isEnabled: settings.isEnabled,
             isPaused: settings.isPaused,
@@ -252,8 +292,22 @@ final class InterceptionController: @unchecked Sendable {
                 decision: decision,
                 windowCount: windowsAfter?.count,
                 ignoredCount: windowsAfter?.ignoredCount,
-                actionTaken: success ? "Requested quit (Cmd+W)" : "Quit request failed (Cmd+W)"
+                actionTaken: success ? "Requested quit (Cmd+W)" : "Quit request failed (Cmd+W)",
+                details: cmdWVerificationDetails(windowsBefore: windowsBefore, samples: samples, elapsed: elapsed)
             )
+        } else if let nextDelay = verificationPolicy.nextDelay(afterElapsed: elapsed, latestResult: windowsAfter) {
+            let nextElapsed = elapsed + nextDelay
+            DispatchQueue.main.asyncAfter(deadline: .now() + nextDelay) { [weak self] in
+                self?.verifyAndMaybeQuitAfterCmdW(
+                    pid: pid,
+                    bundleID: bundleID,
+                    windowsBefore: windowsBefore,
+                    settings: settings,
+                    verificationPolicy: verificationPolicy,
+                    elapsed: nextElapsed,
+                    samples: samples
+                )
+            }
         } else {
             logDecision(
                 app: app,
@@ -261,9 +315,37 @@ final class InterceptionController: @unchecked Sendable {
                 decision: decision,
                 windowCount: windowsAfter?.count,
                 ignoredCount: windowsAfter?.ignoredCount,
-                actionTaken: "Passed through (Cmd+W)"
+                actionTaken: "Passed through (Cmd+W)",
+                details: cmdWVerificationDetails(windowsBefore: windowsBefore, samples: samples, elapsed: elapsed)
             )
         }
+    }
+
+    private func cmdWVerificationDetails(
+        windowsBefore: WindowCountResult,
+        samples: [WindowCountResult?],
+        elapsed: TimeInterval
+    ) -> String {
+        let before = windowCountSummary(windowsBefore)
+        let after = samples.enumerated()
+            .map { index, result in
+                "after[\(index + 1)]=\(windowCountSummary(result))"
+            }
+            .joined(separator: "; ")
+        return "Cmd+W verify before=\(before); \(after); elapsed=\(String(format: "%.2f", elapsed))s"
+    }
+
+    private func windowCountSummary(_ result: WindowCountResult?) -> String {
+        guard let result else { return "unavailable" }
+        var parts = [
+            "count \(result.count)",
+            "ignored \(result.ignoredCount)",
+            "ambiguous \(result.ambiguous)"
+        ]
+        if !result.reasons.isEmpty {
+            parts.append("reasons \(result.reasons.joined(separator: ", "))")
+        }
+        return parts.joined(separator: ", ")
     }
 
     private func isCloseButton(element: AXUIElement) -> Bool {
@@ -280,7 +362,8 @@ final class InterceptionController: @unchecked Sendable {
         decision: DecisionResult,
         windowCount: Int?,
         ignoredCount: Int?,
-        actionTaken: String
+        actionTaken: String,
+        details: String? = nil
     ) {
         guard settingsStore.settings.diagnosticsEnabled else { return }
         let event = DiagnosticEvent(
@@ -292,7 +375,8 @@ final class InterceptionController: @unchecked Sendable {
             ignoredCount: ignoredCount,
             decision: decision.action,
             reason: decision.reason,
-            actionTaken: actionTaken
+            actionTaken: actionTaken,
+            details: details
         )
         let store = diagnosticsStore
         Task { @MainActor in

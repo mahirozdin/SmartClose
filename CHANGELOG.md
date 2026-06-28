@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.3
+- Fix: Cmd+W handling could pass through on macOS 26 when the just-closed last window was still reported briefly by the accessibility/window APIs (#8). SmartClose now retries the post-Cmd+W verification for a short bounded window and records the before/after samples in diagnostics.
+
 ## 0.3.2
 - Fix: closing an app's auxiliary window quit the whole app (#6). Clicking the red close button on a non-standard window — e.g. CotEditor's Find & Replace panel, a dialog, or a floating inspector — was treated as closing the last window and quit the app, even with the main window still open. SmartClose now only quits when the window you close is itself a standard window.
 

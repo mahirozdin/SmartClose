@@ -89,6 +89,41 @@ final class DecisionEngineTests: XCTestCase {
         XCTAssertEqual(decideCmdW(before: windowCount(1), after: windowCount(2)).action, .passThrough)
     }
 
+    func testCmdWCanQuitAfterTransientNonZeroRetrySample() {
+        let firstSample = decideCmdW(before: windowCount(1), after: windowCount(1))
+        let secondSample = decideCmdW(before: windowCount(1), after: windowCount(0))
+
+        XCTAssertEqual(firstSample.action, .passThrough)
+        XCTAssertEqual(firstSample.reason, "Window still open after Cmd+W")
+        XCTAssertEqual(secondSample.action, .requestQuit)
+    }
+
+    func testCmdWVerificationPolicyRetriesUntilClosedOrTimedOut() {
+        let policy = CmdWVerificationPolicy(
+            configuredInitialDelay: 0.25,
+            retryInterval: 0.2,
+            maxDuration: 1.0
+        )
+
+        XCTAssertEqual(policy.initialDelay, 0.25, accuracy: 0.0001)
+        XCTAssertEqual(policy.maxDuration, 1.0, accuracy: 0.0001)
+        XCTAssertEqual(policy.nextDelay(afterElapsed: 0.25, latestResult: windowCount(1)) ?? -1, 0.2, accuracy: 0.0001)
+        XCTAssertNil(policy.nextDelay(afterElapsed: 0.45, latestResult: windowCount(0)))
+        XCTAssertNil(policy.nextDelay(afterElapsed: 1.0, latestResult: windowCount(1)))
+    }
+
+    func testCmdWVerificationPolicyKeepsCustomInitialDelayInsideTimeout() {
+        let policy = CmdWVerificationPolicy(
+            configuredInitialDelay: 1.5,
+            retryInterval: 0.2,
+            maxDuration: 1.0
+        )
+
+        XCTAssertEqual(policy.initialDelay, 1.5, accuracy: 0.0001)
+        XCTAssertEqual(policy.maxDuration, 1.5, accuracy: 0.0001)
+        XCTAssertNil(policy.nextDelay(afterElapsed: 1.5, latestResult: windowCount(1)))
+    }
+
     func testCmdWNotArmedUnlessExactlyOneConfidentWindowBefore() {
         // Multiple windows before → Cmd+W only closed a secondary window; never quit.
         XCTAssertEqual(decideCmdW(before: windowCount(2), after: windowCount(0)).action, .passThrough)

@@ -71,9 +71,9 @@ Behavior → Handle Cmd+W (experimental)**.
 It is intentionally conservative and **off by default**, because `Cmd+W` also
 closes tabs, documents, and editor panes in many apps. When enabled, SmartClose
 never intercepts the keystroke: it lets the app handle `Cmd+W` normally first,
-then re-checks the window count a moment later and requests a normal quit only if
-that actually closed the app's last normal window. It honors the ignore/allow
-lists and per-app rules, and never acts on SmartClose itself.
+then re-checks the window count over a short bounded retry window and requests a
+normal quit only if that actually closed the app's last normal window. It honors
+the ignore/allow lists and per-app rules, and never acts on SmartClose itself.
 
 ## Permissions
 
