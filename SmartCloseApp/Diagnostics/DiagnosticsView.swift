@@ -59,6 +59,12 @@ struct DiagnosticsView: View {
                     Text("Decision: \(latest.decision.rawValue)")
                     Text("Reason: \(latest.reason)")
                     Text("Action taken: \(latest.actionTaken)")
+                    if let details = latest.details, !details.isEmpty {
+                        Text(details)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                    }
                 }
                 .font(.subheadline)
             } else {
@@ -75,6 +81,12 @@ struct DiagnosticsView: View {
                         .font(.headline)
                     Text(event.reason)
                         .font(.subheadline)
+                    if let details = event.details, !details.isEmpty {
+                        Text(details)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                    }
                     Text(event.timestamp, style: .time)
                         .font(.caption)
                 }

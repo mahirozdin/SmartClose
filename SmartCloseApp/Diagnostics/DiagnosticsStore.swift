@@ -11,6 +11,7 @@ struct DiagnosticEvent: Identifiable, Codable {
     let decision: DecisionAction
     let reason: String
     let actionTaken: String
+    let details: String?
 }
 
 enum EventMonitorRuntimeState: String, Equatable {
