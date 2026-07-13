@@ -23,7 +23,7 @@
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.utilities</string>
     <key>LSUIElement</key>
-    <false/>
+    <true/>
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>SUEnableAutomaticChecks</key>
