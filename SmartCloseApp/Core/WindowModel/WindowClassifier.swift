@@ -29,6 +29,7 @@ final class WindowClassifier {
         var ignored = 0
         var ambiguous = false
         var reasons: [String] = []
+        var hasPotentiallyOpenAuxiliaryWindow = false
 
         for window in windows {
             guard let role = window.role else {
@@ -39,6 +40,7 @@ final class WindowClassifier {
 
             if role != kAXWindowRole as String {
                 ignored += 1
+                reasons.append("Ignored non-window role: \(role)")
                 continue
             }
 
@@ -50,6 +52,12 @@ final class WindowClassifier {
 
             if ignoredSubroles.contains(subrole) {
                 ignored += 1
+                if window.isMinimized == true && !settings.countMinimizedWindows {
+                    reasons.append("Ignored minimized auxiliary subrole: \(subrole)")
+                } else {
+                    hasPotentiallyOpenAuxiliaryWindow = true
+                    reasons.append("Ignored auxiliary subrole: \(subrole)")
+                }
                 continue
             }
 
@@ -62,12 +70,14 @@ final class WindowClassifier {
 
             if appIsHidden && !settings.countHiddenWindows {
                 ignored += 1
+                reasons.append("Ignored because app is hidden")
                 continue
             }
 
             if let isMinimized = window.isMinimized {
                 if isMinimized && !settings.countMinimizedWindows {
                     ignored += 1
+                    reasons.append("Ignored minimized window")
                     continue
                 }
             } else if !settings.countMinimizedWindows {
@@ -79,6 +89,7 @@ final class WindowClassifier {
             if let isVisible = window.isVisible {
                 if !isVisible && !settings.countHiddenWindows {
                     ignored += 1
+                    reasons.append("Ignored hidden window")
                     continue
                 }
             } else if !settings.countHiddenWindows && window.isMinimized != false {
@@ -88,6 +99,16 @@ final class WindowClassifier {
             }
 
             countable += 1
+        }
+
+        // Some apps report a minimized standard window as an auxiliary window. When minimized
+        // windows are counted, an auxiliary window alongside one standard window makes the
+        // last-window decision unsafe. When the user explicitly ignores minimized windows, a
+        // minimized auxiliary window remains ignored. With multiple standard windows, the
+        // decision is already non-terminal and remains unambiguous.
+        if countable == 1 && hasPotentiallyOpenAuxiliaryWindow {
+            ambiguous = true
+            reasons.append("Auxiliary window present alongside last standard window")
         }
 
         return WindowCountResult(count: countable, ambiguous: ambiguous, ignoredCount: ignored, reasons: reasons)
