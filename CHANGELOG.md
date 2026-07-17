@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.4
+- Fix: Safari can expose a minimized standard window as `AXDialog`, which made SmartClose incorrectly treat the remaining visible window as the last window even when minimized windows were configured to count. SmartClose now treats this case as ambiguous and safely passes the close through (#11).
+- Fix: hiding the menu bar icon no longer leaves Settings unreachable. Launching SmartClose again opens Settings so the icon can be restored (#11).
+- Fix machine-specific README links so documentation and project links work on GitHub and in any local checkout (#11).
+
 ## 0.3.3
 - Fix: Cmd+W handling could pass through on macOS 26 when the just-closed last window was still reported briefly by the accessibility/window APIs (#8). SmartClose now retries the post-Cmd+W verification for a short bounded window and records the before/after samples in diagnostics.
 
