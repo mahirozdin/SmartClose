@@ -109,7 +109,10 @@ xcrun notarytool submit "${DMG_PATH}" --keychain-profile "${NOTARY_PROFILE}" --w
 xcrun stapler staple "${DMG_PATH}"
 
 echo "==> Writing checksums"
-shasum -a 256 "${ZIP_PATH}" "${DMG_PATH}" > "${CHECKSUM_PATH}"
+(
+  cd "${DIST_DIR}"
+  shasum -a 256 "$(basename "${ZIP_PATH}")" "$(basename "${DMG_PATH}")" > "$(basename "${CHECKSUM_PATH}")"
+)
 
 echo "==> Generating Sparkle appcast"
 APPCAST_PATH="${DIST_DIR}/appcast.xml"
