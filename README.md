@@ -49,7 +49,7 @@ Each release also includes a notarized ZIP of the same app bundle and a SHA-256 
 
 ### Build from source
 
-1. Open [SmartClose.xcodeproj](/Volumes/DevSSD/HomeCache/mahirtahaozdin/Documents/NormalQuit/SmartClose.xcodeproj) in Xcode.
+1. Open [SmartClose.xcodeproj](./SmartClose.xcodeproj) in Xcode.
 2. Select the `SmartClose` scheme.
 3. Build and run.
 
@@ -79,17 +79,17 @@ the ignore/allow lists and per-app rules, and never acts on SmartClose itself.
 
 SmartClose uses macOS Accessibility APIs to detect the close action and inspect windows, plus Input Monitoring to receive the global close-button click.
 
-Detailed permission notes live in [docs/permissions.md](/Volumes/DevSSD/HomeCache/mahirtahaozdin/Documents/NormalQuit/docs/permissions.md).
+Detailed permission notes live in [docs/permissions.md](./docs/permissions.md).
 
 ## Releasing
 
-Release and notarization steps live in [docs/release.md](/Volumes/DevSSD/HomeCache/mahirtahaozdin/Documents/NormalQuit/docs/release.md).
+Release and notarization steps live in [docs/release.md](./docs/release.md).
 
 The repository includes:
 
-- [scripts/release_local.sh](/Volumes/DevSSD/HomeCache/mahirtahaozdin/Documents/NormalQuit/scripts/release_local.sh) for local signed and notarized builds
-- [scripts/create_dmg.sh](/Volumes/DevSSD/HomeCache/mahirtahaozdin/Documents/NormalQuit/scripts/create_dmg.sh) for DMG packaging
-- [release.yml](/Volumes/DevSSD/HomeCache/mahirtahaozdin/Documents/NormalQuit/.github/workflows/release.yml) for GitHub Actions releases
+- [scripts/release_local.sh](./scripts/release_local.sh) for local signed and notarized builds
+- [scripts/create_dmg.sh](./scripts/create_dmg.sh) for DMG packaging
+- [release.yml](./.github/workflows/release.yml) for GitHub Actions releases
 
 ## Known limitations
 
@@ -101,9 +101,9 @@ The repository includes:
 
 ## Documentation
 
-- [FAQ](/Volumes/DevSSD/HomeCache/mahirtahaozdin/Documents/NormalQuit/docs/faq.md)
-- [Contributing](/Volumes/DevSSD/HomeCache/mahirtahaozdin/Documents/NormalQuit/CONTRIBUTING.md)
-- [Changelog](/Volumes/DevSSD/HomeCache/mahirtahaozdin/Documents/NormalQuit/CHANGELOG.md)
+- [FAQ](./docs/faq.md)
+- [Contributing](./CONTRIBUTING.md)
+- [Changelog](./CHANGELOG.md)
 
 ## Contributors
 

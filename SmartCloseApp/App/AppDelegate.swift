@@ -37,7 +37,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 Log.app.info("Opening onboarding window (first run)")
                 self?.openOnboarding()
             }
+        } else if !appModel.settingsStore.settings.showMenuBarIcon {
+            // The menubar icon is normally the only way to reach Settings in this accessory app.
+            // When a user hides it, launching the app again provides a recovery path rather than
+            // leaving the running app with no visible UI. Keep onboarding above this path so
+            // first-run users still complete setup first.
+            DispatchQueue.main.async { [weak self] in
+                Log.app.info("Opening settings window because the menu-bar icon is hidden")
+                self?.openSettings()
+            }
         }
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        guard !appModel.settingsStore.settings.showMenuBarIcon else {
+            return false
+        }
+
+        Log.app.info("Opening settings window after app reopen because the menu-bar icon is hidden")
+        openSettings()
+        return false
     }
 
     private func openSettings() {
