@@ -67,7 +67,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .environmentObject(appModel.inputMonitoringManager)
             .environmentObject(updaterBridge)
         if settingsWindowController == nil {
-            settingsWindowController = HostingWindowController(title: "SmartClose Settings", rootView: AnyView(view))
+            settingsWindowController = HostingWindowController(title: String(localized: "SmartClose Settings"), rootView: AnyView(view))
         }
         settingsWindowController?.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -78,7 +78,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let view = DiagnosticsView()
             .environmentObject(appModel.diagnosticsStore)
         if diagnosticsWindowController == nil {
-            diagnosticsWindowController = HostingWindowController(title: "SmartClose Diagnostics", rootView: AnyView(view))
+            diagnosticsWindowController = HostingWindowController(title: String(localized: "SmartClose Diagnostics"), rootView: AnyView(view))
         }
         diagnosticsWindowController?.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -100,7 +100,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .environmentObject(appModel.inputMonitoringManager)
             .environmentObject(appModel.settingsStore)
         if onboardingWindowController == nil {
-            onboardingWindowController = HostingWindowController(title: "Welcome to SmartClose", rootView: AnyView(view), size: NSSize(width: 560, height: 420))
+            onboardingWindowController = HostingWindowController(title: String(localized: "Welcome to SmartClose"), rootView: AnyView(view), size: NSSize(width: 560, height: 420))
         }
         onboardingWindowController?.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)

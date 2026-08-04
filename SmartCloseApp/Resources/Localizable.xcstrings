@@ -1,0 +1,1409 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "": {},
+    "%@ - %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ — %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ - %2$@"
+          }
+        }
+      }
+    },
+    "Accessibility": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Универсальный доступ"
+          }
+        }
+      }
+    },
+    "Accessibility permission missing": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет разрешения на универсальный доступ"
+          }
+        }
+      }
+    },
+    "Action taken: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выполненное действие: %@"
+          }
+        }
+      }
+    },
+    "Add": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавить"
+          }
+        }
+      }
+    },
+    "All set": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всё готово"
+          }
+        }
+      }
+    },
+    "Allow List": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Список разрешённых"
+          }
+        }
+      }
+    },
+    "Allow list": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Список разрешённых"
+          }
+        }
+      }
+    },
+    "Always normal close": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всегда обычное закрытие"
+          }
+        }
+      }
+    },
+    "Always normal close policy": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Политика обычного закрытия"
+          }
+        }
+      }
+    },
+    "Always quit on last window": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всегда завершать при последнем окне"
+          }
+        }
+      }
+    },
+    "Ambiguous window classification": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неоднозначная классификация окон"
+          }
+        }
+      }
+    },
+    "App Path": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Путь к приложению"
+          }
+        }
+      }
+    },
+    "App Rules": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Правила приложений"
+          }
+        }
+      }
+    },
+    "App: %@ (%@)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приложение: %1$@ (%2$@)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App: %1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "Approve SmartClose in the macOS prompt to continue.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подтвердите доступ для SmartClose в запросе macOS, чтобы продолжить."
+          }
+        }
+      }
+    },
+    "Automatically check for updates": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Автоматически проверять обновления"
+          }
+        }
+      }
+    },
+    "Back": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Назад"
+          }
+        }
+      }
+    },
+    "Behavior": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поведение"
+          }
+        }
+      }
+    },
+    "Bundle ID": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Идентификатор пакета"
+          }
+        }
+      }
+    },
+    "Bundle ID or pattern": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Идентификатор пакета или шаблон"
+          }
+        }
+      }
+    },
+    "Bundle Path": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Путь к пакету"
+          }
+        }
+      }
+    },
+    "Check for Updates…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверить обновления…"
+          }
+        }
+      }
+    },
+    "Checking": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверка"
+          }
+        }
+      }
+    },
+    "Checking the current macOS permission state.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверка текущего состояния разрешений macOS."
+          }
+        }
+      }
+    },
+    "Closed window is not a standard window": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрытое окно не является стандартным"
+          }
+        }
+      }
+    },
+    "Code-Signing ID": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Идентификатор подписи кода"
+          }
+        }
+      }
+    },
+    "Continue": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Продолжить"
+          }
+        }
+      }
+    },
+    "Copy App Path": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скопировать путь к приложению"
+          }
+        }
+      }
+    },
+    "Debug logging": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Журнал отладки"
+          }
+        }
+      }
+    },
+    "Decision: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Решение: %@"
+          }
+        }
+      }
+    },
+    "Default": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "По умолчанию"
+          }
+        }
+      }
+    },
+    "Diagnostics": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Диагностика"
+          }
+        }
+      }
+    },
+    "Disable SmartClose": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключить SmartClose"
+          }
+        }
+      }
+    },
+    "Disabled": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключено"
+          }
+        }
+      }
+    },
+    "Disabled for this app": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключено для этого приложения"
+          }
+        }
+      }
+    },
+    "Enable SmartClose": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включить SmartClose"
+          }
+        }
+      }
+    },
+    "Enable diagnostics": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включить диагностику"
+          }
+        }
+      }
+    },
+    "Enabled": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включено"
+          }
+        }
+      }
+    },
+    "Errors only": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Только ошибки"
+          }
+        }
+      }
+    },
+    "Event Monitor": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Монитор событий"
+          }
+        }
+      }
+    },
+    "Excluded by policy": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Исключено политикой"
+          }
+        }
+      }
+    },
+    "Export Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экспортировать настройки"
+          }
+        }
+      }
+    },
+    "Export SmartClose Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экспорт настроек SmartClose"
+          }
+        }
+      }
+    },
+    "Failed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ошибка"
+          }
+        }
+      }
+    },
+    "Finish": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово"
+          }
+        }
+      }
+    },
+    "Frontmost App": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Активное приложение"
+          }
+        }
+      }
+    },
+    "Global mode": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Глобальный режим"
+          }
+        }
+      }
+    },
+    "Grant Access": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предоставить доступ"
+          }
+        }
+      }
+    },
+    "Grant both permissions below before SmartClose starts intercepting the red close button.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предоставьте оба разрешения ниже, прежде чем SmartClose начнёт отслеживать нажатия красной кнопки закрытия."
+          }
+        }
+      }
+    },
+    "Grant both permissions to start monitoring close-button clicks.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предоставьте оба разрешения, чтобы начать отслеживание нажатий кнопки закрытия."
+          }
+        }
+      }
+    },
+    "Granted": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешено"
+          }
+        }
+      }
+    },
+    "Handle Cmd+W (experimental)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обрабатывать Cmd+W (экспериментально)"
+          }
+        }
+      }
+    },
+    "Hard exclusion": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Жёсткое исключение"
+          }
+        }
+      }
+    },
+    "Idle": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ожидание"
+          }
+        }
+      }
+    },
+    "If permissions look stale after a signing or Debug-build change, reset TCC for SmartClose and try again:": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если состояние разрешений устарело после изменения подписи или Debug-сборки, сбросьте TCC для SmartClose и попробуйте снова:"
+          }
+        }
+      }
+    },
+    "If the prompt did not appear or was denied, enable SmartClose manually in System Settings.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если запрос не появился или был отклонён, включите SmartClose вручную в Системных настройках."
+          }
+        }
+      }
+    },
+    "Ignore List": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Список исключений"
+          }
+        }
+      }
+    },
+    "Ignore hidden windows": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игнорировать скрытые окна"
+          }
+        }
+      }
+    },
+    "Ignore minimized windows": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игнорировать свёрнутые окна"
+          }
+        }
+      }
+    },
+    "Ignored bundle": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Исключённый пакет"
+          }
+        }
+      }
+    },
+    "Ignored windows: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игнорируемых окон: %@"
+          }
+        }
+      }
+    },
+    "Import Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Импортировать настройки"
+          }
+        }
+      }
+    },
+    "Import SmartClose Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Импорт настроек SmartClose"
+          }
+        }
+      }
+    },
+    "Info": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Информация"
+          }
+        }
+      }
+    },
+    "Input Monitoring": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Мониторинг ввода"
+          }
+        }
+      }
+    },
+    "Last Intercepted Action": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последнее обработанное действие"
+          }
+        }
+      }
+    },
+    "Last normal window": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последнее обычное окно"
+          }
+        }
+      }
+    },
+    "Last window closed via Cmd+W": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последнее окно закрыто через Cmd+W"
+          }
+        }
+      }
+    },
+    "Launch at login": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запускать при входе"
+          }
+        }
+      }
+    },
+    "Missing": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет разрешения"
+          }
+        }
+      }
+    },
+    "Multiple windows open": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыто несколько окон"
+          }
+        }
+      }
+    },
+    "Needed to inspect windows and confirm the red close button safely.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Требуется, чтобы проверять окна и безопасно распознавать красную кнопку закрытия."
+          }
+        }
+      }
+    },
+    "Needed to receive global close-button clicks before macOS handles them.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Требуется, чтобы получать глобальные нажатия кнопки закрытия до их обработки macOS."
+          }
+        }
+      }
+    },
+    "Needs relaunch": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Требуется перезапуск"
+          }
+        }
+      }
+    },
+    "No confident normal window before Cmd+W": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перед Cmd+W не найдено достоверно определённое обычное окно"
+          }
+        }
+      }
+    },
+    "No countable windows": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет учитываемых окон"
+          }
+        }
+      }
+    },
+    "No per-app rules": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет правил для приложений"
+          }
+        }
+      }
+    },
+    "No recent activity yet. SmartClose only logs interception decisions after both permissions are granted and the app is enabled.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пока нет недавней активности. SmartClose записывает решения об обработке только после предоставления обоих разрешений и включения приложения."
+          }
+        }
+      }
+    },
+    "None": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет"
+          }
+        }
+      }
+    },
+    "Off by default. When on, SmartClose lets the app handle Cmd+W normally first, then quits it only if that closed its last normal window. Honors the ignore/allow lists and per-app rules.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "По умолчанию отключено. Когда включено, SmartClose сначала позволяет приложению штатно обработать Cmd+W, а затем завершает его только в том случае, если было закрыто последнее обычное окно. Учитывает списки разрешений и исключений, а также правила для приложений."
+          }
+        }
+      }
+    },
+    "Open Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть настройки"
+          }
+        }
+      }
+    },
+    "Pass through": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропустить"
+          }
+        }
+      }
+    },
+    "Passed through": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропущено"
+          }
+        }
+      }
+    },
+    "Passed through (Cmd+W)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропущено (Cmd+W)"
+          }
+        }
+      }
+    },
+    "Pause for 1 hour": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приостановить на 1 час"
+          }
+        }
+      }
+    },
+    "Paused": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приостановлено"
+          }
+        }
+      }
+    },
+    "Per-App Rules": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Правила для приложений"
+          }
+        }
+      }
+    },
+    "Permission Health": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Состояние разрешений"
+          }
+        }
+      }
+    },
+    "Policy": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Политика"
+          }
+        }
+      }
+    },
+    "Quick Setup": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Быстрая настройка"
+          }
+        }
+      }
+    },
+    "Quit SmartClose": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Завершить SmartClose"
+          }
+        }
+      }
+    },
+    "Quit request failed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось запросить завершение"
+          }
+        }
+      }
+    },
+    "Quit request failed (Cmd+W)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось запросить завершение (Cmd+W)"
+          }
+        }
+      }
+    },
+    "Reason: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Причина: %@"
+          }
+        }
+      }
+    },
+    "Relaunch SmartClose": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перезапустить SmartClose"
+          }
+        }
+      }
+    },
+    "Relaunch SmartClose to reattach its event monitor.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перезапустите SmartClose, чтобы повторно подключить монитор событий."
+          }
+        }
+      }
+    },
+    "Relaunch SmartClose to rebuild the global event tap.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перезапустите SmartClose, чтобы пересоздать глобальный перехватчик событий."
+          }
+        }
+      }
+    },
+    "Remove": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить"
+          }
+        }
+      }
+    },
+    "Request quit": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запросить завершение"
+          }
+        }
+      }
+    },
+    "Requested quit": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запрошено завершение"
+          }
+        }
+      }
+    },
+    "Requested quit (Cmd+W)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запрошено завершение (Cmd+W)"
+          }
+        }
+      }
+    },
+    "Required Access": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Необходимый доступ"
+          }
+        }
+      }
+    },
+    "Resume SmartClose": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Возобновить SmartClose"
+          }
+        }
+      }
+    },
+    "Running": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Работает"
+          }
+        }
+      }
+    },
+    "Settings Backup": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Резервная копия настроек"
+          }
+        }
+      }
+    },
+    "Show Diagnostics": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать диагностику"
+          }
+        }
+      }
+    },
+    "Show menu bar icon": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показывать значок в строке меню"
+          }
+        }
+      }
+    },
+    "Smart close (quit on last window)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Умное закрытие (завершать при последнем окне)"
+          }
+        }
+      }
+    },
+    "SmartClose Diagnostics": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Диагностика SmartClose"
+          }
+        }
+      }
+    },
+    "SmartClose Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройки SmartClose"
+          }
+        }
+      }
+    },
+    "SmartClose can inspect windows.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SmartClose может проверять окна."
+          }
+        }
+      }
+    },
+    "SmartClose can monitor close-button clicks.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SmartClose может отслеживать нажатия кнопки закрытия."
+          }
+        }
+      }
+    },
+    "SmartClose disabled": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SmartClose отключён"
+          }
+        }
+      }
+    },
+    "SmartClose is disabled.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SmartClose отключён."
+          }
+        }
+      }
+    },
+    "SmartClose is ready. You can manage rules, diagnostics, and permissions anytime from the menu bar.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SmartClose готов. Правилами, диагностикой и разрешениями можно управлять в любое время через строку меню."
+          }
+        }
+      }
+    },
+    "SmartClose needs this before it can inspect windows.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для проверки окон SmartClose требуется это разрешение."
+          }
+        }
+      }
+    },
+    "SmartClose needs this before it can monitor close-button clicks.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для отслеживания нажатий кнопки закрытия SmartClose требуется это разрешение."
+          }
+        }
+      }
+    },
+    "SmartClose needs two permissions": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SmartClose нужны два разрешения"
+          }
+        }
+      }
+    },
+    "SmartClose only becomes active once both permissions are green and the app is enabled.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SmartClose активируется только после предоставления обоих разрешений (зелёный статус) и включения приложения."
+          }
+        }
+      }
+    },
+    "Start SmartClose at login": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запускать SmartClose при входе"
+          }
+        }
+      }
+    },
+    "Status: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Статус: %@"
+          }
+        }
+      }
+    },
+    "Status: Unknown": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Статус: неизвестен"
+          }
+        }
+      }
+    },
+    "These defaults are safe to change later in Settings.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эти настройки по умолчанию можно безопасно изменить позже."
+          }
+        }
+      }
+    },
+    "Unknown": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неизвестно"
+          }
+        }
+      }
+    },
+    "Use * as a wildcard in bundle IDs (case-sensitive).": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Используйте * как подстановочный знак в идентификаторах пакетов (с учётом регистра)."
+          }
+        }
+      }
+    },
+    "Use allow list (only apply to listed apps)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Использовать список разрешённых (применять только к указанным приложениям)"
+          }
+        }
+      }
+    },
+    "Verbose": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подробный"
+          }
+        }
+      }
+    },
+    "Waiting for macOS": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ожидание macOS"
+          }
+        }
+      }
+    },
+    "Welcome to SmartClose": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добро пожаловать в SmartClose"
+          }
+        }
+      }
+    },
+    "Window count unavailable": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось получить число окон"
+          }
+        }
+      }
+    },
+    "Window count: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Количество окон: %@"
+          }
+        }
+      }
+    },
+    "Window still open after Cmd+W": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Окно всё ещё открыто после Cmd+W"
+          }
+        }
+      }
+    },
+    "com.apple.finder": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "com.apple.finder"
+          }
+        }
+      }
+    },
+    "com.example.app": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "com.example.app"
+          }
+        }
+      }
+    },
+    "macOS did not allow SmartClose to create its global event tap.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS не разрешила SmartClose создать глобальный перехватчик событий."
+          }
+        }
+      }
+    },
+    "macOS granted access, but SmartClose needs a relaunch to rebuild its event monitor.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS предоставила доступ, но SmartClose нужно перезапустить, чтобы пересоздать монитор событий."
+          }
+        }
+      }
+    },
+    "macOS granted access, but SmartClose needs a relaunch to restart event monitoring.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS предоставила доступ, но SmartClose нужно перезапустить, чтобы возобновить мониторинг событий."
+          }
+        }
+      }
+    },
+    "macOS granted access, but SmartClose needs a relaunch to start monitoring.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS предоставила доступ, но SmartClose нужно перезапустить, чтобы начать мониторинг."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

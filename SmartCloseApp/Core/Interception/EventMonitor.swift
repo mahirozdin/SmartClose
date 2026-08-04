@@ -12,7 +12,7 @@ enum EventMonitorError: Error, Equatable {
     var message: String {
         switch self {
         case .tapCreationFailed:
-            return "macOS did not allow SmartClose to create its global event tap."
+            return String(localized: "macOS did not allow SmartClose to create its global event tap.")
         }
     }
 }

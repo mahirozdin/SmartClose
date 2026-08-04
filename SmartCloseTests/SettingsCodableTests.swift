@@ -67,3 +67,29 @@ final class SettingsCodableTests: XCTestCase {
         XCTAssertTrue(decoded.cmdWPerApp.isEmpty)
     }
 }
+
+final class LocalizationTests: XCTestCase {
+    func testRussianLocalizationIsBundledAndResolvesCoreInterfaceStrings() throws {
+        let testBundle = Bundle(for: LocalizationTests.self)
+        let hostBundleURL = testBundle.bundleURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let hostBundle = try XCTUnwrap(Bundle(url: hostBundleURL))
+        let russianURL = try XCTUnwrap(hostBundle.url(forResource: "ru", withExtension: "lproj"))
+        let russianBundle = try XCTUnwrap(Bundle(url: russianURL))
+
+        XCTAssertEqual(
+            russianBundle.localizedString(forKey: "SmartClose Settings", value: nil, table: nil),
+            "Настройки SmartClose"
+        )
+        XCTAssertEqual(
+            russianBundle.localizedString(forKey: "Handle Cmd+W (experimental)", value: nil, table: nil),
+            "Обрабатывать Cmd+W (экспериментально)"
+        )
+        XCTAssertEqual(
+            russianBundle.localizedString(forKey: "Grant Access", value: nil, table: nil),
+            "Предоставить доступ"
+        )
+    }
+}

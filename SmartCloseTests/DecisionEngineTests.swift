@@ -87,6 +87,15 @@ final class DecisionEngineTests: XCTestCase {
     func testCmdWPassesThroughWhenWindowStillOpen() {
         XCTAssertEqual(decideCmdW(before: windowCount(1), after: windowCount(1)).action, .passThrough)
         XCTAssertEqual(decideCmdW(before: windowCount(1), after: windowCount(2)).action, .passThrough)
+        XCTAssertEqual(decideCmdW(before: windowCount(2), after: windowCount(1)).action, .passThrough)
+    }
+
+    // Regression for issue #10: during rapid Cmd+W presses, Accessibility can still report the
+    // penultimate Terminal window before the final keypress. A positive, confident pre-close
+    // count must therefore remain armed; zero after verification is the only quit trigger.
+    func testCmdWQuitsAfterRapidMultiWindowSequenceReachesZero() {
+        XCTAssertEqual(decideCmdW(before: windowCount(2), after: windowCount(0)).action, .requestQuit)
+        XCTAssertEqual(decideCmdW(before: windowCount(3), after: windowCount(0, ambiguous: true)).action, .requestQuit)
     }
 
     func testCmdWCanQuitAfterTransientNonZeroRetrySample() {
@@ -124,9 +133,7 @@ final class DecisionEngineTests: XCTestCase {
         XCTAssertNil(policy.nextDelay(afterElapsed: 1.5, latestResult: windowCount(1)))
     }
 
-    func testCmdWNotArmedUnlessExactlyOneConfidentWindowBefore() {
-        // Multiple windows before → Cmd+W only closed a secondary window; never quit.
-        XCTAssertEqual(decideCmdW(before: windowCount(2), after: windowCount(0)).action, .passThrough)
+    func testCmdWRequiresAConfidentPositiveWindowCountBefore() {
         // No window before → nothing to close.
         XCTAssertEqual(decideCmdW(before: windowCount(0), after: windowCount(0)).action, .passThrough)
         // Ambiguous before → not confident there was a single normal window.

@@ -36,6 +36,8 @@ On macOS, clicking the red close button usually closes a window but keeps the ap
 - Accessibility permission
 - Input Monitoring permission
 
+SmartClose is available in English and Russian and follows your macOS language preference.
+
 ## Install
 
 ### Download a release

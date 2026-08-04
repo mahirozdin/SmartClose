@@ -130,10 +130,10 @@ final class InterceptionController: @unchecked Sendable {
             logDecision(
                 app: runningApp,
                 bundleID: bundleID,
-                decision: DecisionResult(action: .passThrough, reason: "Excluded by policy"),
+                decision: DecisionResult(action: .passThrough, reason: String(localized: "Excluded by policy")),
                 windowCount: nil,
                 ignoredCount: nil,
-                actionTaken: "None"
+                actionTaken: String(localized: "None")
             )
             return .passThrough
         }
@@ -180,7 +180,7 @@ final class InterceptionController: @unchecked Sendable {
                 decision: decision,
                 windowCount: windowCountResult?.count,
                 ignoredCount: windowCountResult?.ignoredCount,
-                actionTaken: success ? "Requested quit" : "Quit request failed"
+                actionTaken: success ? String(localized: "Requested quit") : String(localized: "Quit request failed")
             )
             return .swallow
         }
@@ -191,7 +191,7 @@ final class InterceptionController: @unchecked Sendable {
             decision: decision,
             windowCount: windowCountResult?.count,
             ignoredCount: windowCountResult?.ignoredCount,
-            actionTaken: "Passed through"
+            actionTaken: String(localized: "Passed through")
         )
         return .passThrough
     }
@@ -225,12 +225,12 @@ final class InterceptionController: @unchecked Sendable {
         guard policyResolver.cmdWEnabled(bundleID: bundleID, settings: settings) else { return }
 
         // Count windows BEFORE the app handles Cmd+W. The keystroke has only been observed
-        // (the event tap runs before delivery), so the target window is still open here. Only
-        // arm when there is exactly one confidently-classified normal window — a plausible
-        // "last window" — otherwise Cmd+W is just closing a tab/secondary window and we leave
-        // it alone.
+        // (the event tap runs before delivery), so the target window is still open here. Arm for
+        // any confidently-classified positive count and quit only if verification later reaches
+        // zero. This also covers rapid multi-window sequences where Accessibility still reports
+        // the penultimate, just-closed window when the final Cmd+W arrives (issue #10).
         let windowsBefore = windowCountingService.countWindows(for: pid, appIsHidden: app.isHidden, settings: settings)
-        guard let windowsBefore, windowsBefore.count == 1, !windowsBefore.ambiguous else {
+        guard let windowsBefore, windowsBefore.count > 0, !windowsBefore.ambiguous else {
             if settings.debugLoggingLevel == .verbose {
                 Log.interception.debug("Cmd+W not armed bundle=\(bundleID) before=\(windowsBefore?.count ?? -1) ambiguous=\(windowsBefore?.ambiguous ?? true)")
             }
@@ -292,7 +292,7 @@ final class InterceptionController: @unchecked Sendable {
                 decision: decision,
                 windowCount: windowsAfter?.count,
                 ignoredCount: windowsAfter?.ignoredCount,
-                actionTaken: success ? "Requested quit (Cmd+W)" : "Quit request failed (Cmd+W)",
+                actionTaken: success ? String(localized: "Requested quit (Cmd+W)") : String(localized: "Quit request failed (Cmd+W)"),
                 details: cmdWVerificationDetails(windowsBefore: windowsBefore, samples: samples, elapsed: elapsed)
             )
         } else if let nextDelay = verificationPolicy.nextDelay(afterElapsed: elapsed, latestResult: windowsAfter) {
@@ -315,7 +315,7 @@ final class InterceptionController: @unchecked Sendable {
                 decision: decision,
                 windowCount: windowsAfter?.count,
                 ignoredCount: windowsAfter?.ignoredCount,
-                actionTaken: "Passed through (Cmd+W)",
+                actionTaken: String(localized: "Passed through (Cmd+W)"),
                 details: cmdWVerificationDetails(windowsBefore: windowsBefore, samples: samples, elapsed: elapsed)
             )
         }
@@ -369,7 +369,7 @@ final class InterceptionController: @unchecked Sendable {
         let event = DiagnosticEvent(
             id: UUID(),
             timestamp: Date(),
-            appName: app.localizedName ?? "Unknown",
+            appName: app.localizedName ?? String(localized: "Unknown"),
             bundleID: bundleID,
             windowCount: windowCount,
             ignoredCount: ignoredCount,

@@ -110,7 +110,7 @@ final class AppModel {
                 eventMonitorState = .running
                 eventMonitorMessage = nil
             case .failure(let error):
-                let recoveryMessage = "macOS granted access, but SmartClose needs a relaunch to rebuild its event monitor."
+                let recoveryMessage = String(localized: "macOS granted access, but SmartClose needs a relaunch to rebuild its event monitor.")
                 permissionManager.setRecoveryMessage(nil)
                 inputMonitoringManager.setRecoveryMessage(recoveryMessage)
                 eventMonitorState = .failed
@@ -123,11 +123,11 @@ final class AppModel {
             inputMonitoringManager.setRecoveryMessage(nil)
             if isEnabled {
                 eventMonitorState = .idle
-                eventMonitorMessage = permissionsGranted ? nil : "Grant both permissions to start monitoring close-button clicks."
+                eventMonitorMessage = permissionsGranted ? nil : String(localized: "Grant both permissions to start monitoring close-button clicks.")
                 Log.app.info("Permissions missing. Event monitor idle.")
             } else {
                 eventMonitorState = .disabled
-                eventMonitorMessage = "SmartClose is disabled."
+                eventMonitorMessage = String(localized: "SmartClose is disabled.")
                 Log.app.info("SmartClose disabled. Event monitor stopped.")
             }
         }

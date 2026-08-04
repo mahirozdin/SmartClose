@@ -130,18 +130,18 @@ final class InputMonitoringManager: ObservableObject {
     private var message: String {
         switch rowStatus {
         case .unknown:
-            return "Checking the current macOS permission state."
+            return String(localized: "Checking the current macOS permission state.")
         case .missing:
             if hasRequestedSystemPrompt {
-                return "If the prompt did not appear or was denied, enable SmartClose manually in System Settings."
+                return String(localized: "If the prompt did not appear or was denied, enable SmartClose manually in System Settings.")
             }
-            return "SmartClose needs this before it can monitor close-button clicks."
+            return String(localized: "SmartClose needs this before it can monitor close-button clicks.")
         case .requesting:
-            return "Approve SmartClose in the macOS prompt to continue."
+            return String(localized: "Approve SmartClose in the macOS prompt to continue.")
         case .granted:
-            return "SmartClose can monitor close-button clicks."
+            return String(localized: "SmartClose can monitor close-button clicks.")
         case .recoveryNeeded:
-            return recoveryMessage ?? "macOS granted access, but SmartClose needs a relaunch to restart event monitoring."
+            return recoveryMessage ?? String(localized: "macOS granted access, but SmartClose needs a relaunch to restart event monitoring.")
         }
     }
 
@@ -165,7 +165,7 @@ final class InputMonitoringManager: ObservableObject {
             isGranted = true
             rowStatus = .granted
         case .recovery:
-            recoveryMessage = "Relaunch SmartClose to rebuild the global event tap."
+            recoveryMessage = String(localized: "Relaunch SmartClose to rebuild the global event tap.")
             isGranted = true
             rowStatus = .recoveryNeeded
         }

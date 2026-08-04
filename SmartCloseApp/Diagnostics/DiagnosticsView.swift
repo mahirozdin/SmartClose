@@ -13,12 +13,12 @@ struct DiagnosticsView: View {
 
             GroupBox(label: Text("Permission Health")) {
                 VStack(alignment: .leading, spacing: 10) {
-                    DiagnosticRow(label: "Bundle ID", value: snapshot.appIdentity.bundleID)
-                    DiagnosticRow(label: "Code-Signing ID", value: snapshot.appIdentity.codeSigningIdentifier)
-                    DiagnosticRow(label: "Bundle Path", value: snapshot.appIdentity.bundlePath)
-                    DiagnosticRow(label: "Accessibility", value: snapshot.accessibilityRow.status.label)
-                    DiagnosticRow(label: "Input Monitoring", value: snapshot.inputMonitoringRow.status.label)
-                    DiagnosticRow(label: "Event Monitor", value: snapshot.eventMonitorState.label)
+                    DiagnosticRow(label: String(localized: "Bundle ID"), value: snapshot.appIdentity.bundleID)
+                    DiagnosticRow(label: String(localized: "Code-Signing ID"), value: snapshot.appIdentity.codeSigningIdentifier)
+                    DiagnosticRow(label: String(localized: "Bundle Path"), value: snapshot.appIdentity.bundlePath)
+                    DiagnosticRow(label: String(localized: "Accessibility"), value: snapshot.accessibilityRow.status.label)
+                    DiagnosticRow(label: String(localized: "Input Monitoring"), value: snapshot.inputMonitoringRow.status.label)
+                    DiagnosticRow(label: String(localized: "Event Monitor"), value: snapshot.eventMonitorState.label)
 
                     if let eventMonitorMessage = snapshot.eventMonitorMessage {
                         Text(eventMonitorMessage)
@@ -56,7 +56,7 @@ struct DiagnosticsView: View {
                     Text("App: \(latest.appName) (\(latest.bundleID))")
                     Text("Window count: \(latest.windowCount.map(String.init) ?? "-")")
                     Text("Ignored windows: \(latest.ignoredCount.map(String.init) ?? "-")")
-                    Text("Decision: \(latest.decision.rawValue)")
+                    Text("Decision: \(latest.decision.displayName)")
                     Text("Reason: \(latest.reason)")
                     Text("Action taken: \(latest.actionTaken)")
                     if let details = latest.details, !details.isEmpty {
@@ -77,7 +77,7 @@ struct DiagnosticsView: View {
 
             List(diagnosticsStore.events) { event in
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("\(event.appName) - \(event.decision.rawValue)")
+                    Text("\(event.appName) - \(event.decision.displayName)")
                         .font(.headline)
                     Text(event.reason)
                         .font(.subheadline)
