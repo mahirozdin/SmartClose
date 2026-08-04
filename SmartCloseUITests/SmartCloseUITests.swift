@@ -33,11 +33,22 @@ final class SmartCloseUITests: XCTestCase {
         XCTAssertTrue(app.checkBoxes["Enable SmartClose"].exists)
     }
 
-    private func launchApp(accessibility: String, inputMonitoring: String) -> XCUIApplication {
+    func testRussianLocalizationRendersOnboarding() {
+        let app = launchApp(accessibility: "missing", inputMonitoring: "missing", language: "ru")
+
+        XCTAssertTrue(app.staticTexts["SmartClose нужны два разрешения"].waitForExistence(timeout: 2))
+        XCTAssertEqual(app.buttons.matching(identifier: "Предоставить доступ").count, 2)
+        XCTAssertTrue(app.buttons["Продолжить"].exists)
+    }
+
+    private func launchApp(accessibility: String, inputMonitoring: String, language: String? = nil) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment["SMARTCLOSE_TEST_USER_DEFAULTS_SUITE"] = "SmartCloseUITests.\(UUID().uuidString)"
         app.launchEnvironment["SMARTCLOSE_TEST_ACCESSIBILITY"] = accessibility
         app.launchEnvironment["SMARTCLOSE_TEST_INPUT_MONITORING"] = inputMonitoring
+        if let language {
+            app.launchArguments += ["-AppleLanguages", "(\(language))", "-AppleLocale", "\(language)_RU"]
+        }
         app.launch()
         return app
     }

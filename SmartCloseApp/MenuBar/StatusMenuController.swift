@@ -56,47 +56,47 @@ final class StatusMenuController {
     }
 
     private func buildMenu() {
-        statusItemLabel = NSMenuItem(title: "Status: Unknown", action: nil, keyEquivalent: "")
+        statusItemLabel = NSMenuItem(title: String(localized: "Status: Unknown"), action: nil, keyEquivalent: "")
         menu.addItem(statusItemLabel)
 
-        enabledItem = NSMenuItem(title: "Enable SmartClose", action: #selector(toggleEnabled), keyEquivalent: "")
+        enabledItem = NSMenuItem(title: String(localized: "Enable SmartClose"), action: #selector(toggleEnabled), keyEquivalent: "")
         enabledItem.target = self
         menu.addItem(enabledItem)
 
-        pauseItem = NSMenuItem(title: "Pause for 1 hour", action: #selector(pauseForHour), keyEquivalent: "")
+        pauseItem = NSMenuItem(title: String(localized: "Pause for 1 hour"), action: #selector(pauseForHour), keyEquivalent: "")
         pauseItem.target = self
         menu.addItem(pauseItem)
 
         menu.addItem(.separator())
 
-        let settingsItem = NSMenuItem(title: "Open Settings", action: #selector(openSettings), keyEquivalent: ",")
+        let settingsItem = NSMenuItem(title: String(localized: "Open Settings"), action: #selector(openSettings), keyEquivalent: ",")
         settingsItem.target = self
         menu.addItem(settingsItem)
 
-        let diagnosticsItem = NSMenuItem(title: "Show Diagnostics", action: #selector(showDiagnostics), keyEquivalent: "d")
+        let diagnosticsItem = NSMenuItem(title: String(localized: "Show Diagnostics"), action: #selector(showDiagnostics), keyEquivalent: "d")
         diagnosticsItem.target = self
         menu.addItem(diagnosticsItem)
 
-        let updatesItem = NSMenuItem(title: "Check for Updates…", action: #selector(checkForUpdates), keyEquivalent: "")
+        let updatesItem = NSMenuItem(title: String(localized: "Check for Updates…"), action: #selector(checkForUpdates), keyEquivalent: "")
         updatesItem.target = self
         menu.addItem(updatesItem)
 
         menu.addItem(.separator())
 
-        let quitItem = NSMenuItem(title: "Quit SmartClose", action: #selector(quitApp), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: String(localized: "Quit SmartClose"), action: #selector(quitApp), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
     }
 
     private func updateMenu(settings: Settings) {
-        let statusText = settings.isEnabled ? "Enabled" : "Disabled"
-        statusItemLabel.title = "Status: \(statusText)"
-        enabledItem.title = settings.isEnabled ? "Disable SmartClose" : "Enable SmartClose"
+        let statusText = settings.isEnabled ? String(localized: "Enabled") : String(localized: "Disabled")
+        statusItemLabel.title = String.localizedStringWithFormat(String(localized: "Status: %@"), statusText)
+        enabledItem.title = settings.isEnabled ? String(localized: "Disable SmartClose") : String(localized: "Enable SmartClose")
 
         if settings.isPaused {
-            pauseItem.title = "Resume SmartClose"
+            pauseItem.title = String(localized: "Resume SmartClose")
         } else {
-            pauseItem.title = "Pause for 1 hour"
+            pauseItem.title = String(localized: "Pause for 1 hour")
         }
 
         statusItem.isVisible = settings.showMenuBarIcon

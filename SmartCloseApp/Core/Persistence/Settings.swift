@@ -8,8 +8,8 @@ enum GlobalMode: String, Codable, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .smartClose: return "Smart close (quit on last window)"
-        case .alwaysNormalClose: return "Always normal close"
+        case .smartClose: return String(localized: "Smart close (quit on last window)")
+        case .alwaysNormalClose: return String(localized: "Always normal close")
         }
     }
 }
@@ -24,10 +24,10 @@ enum AppPolicy: String, Codable, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .default: return "Default"
-        case .alwaysNormalClose: return "Always normal close"
-        case .alwaysQuitOnLastWindow: return "Always quit on last window"
-        case .disabled: return "Disabled for this app"
+        case .default: return String(localized: "Default")
+        case .alwaysNormalClose: return String(localized: "Always normal close")
+        case .alwaysQuitOnLastWindow: return String(localized: "Always quit on last window")
+        case .disabled: return String(localized: "Disabled for this app")
         }
     }
 }
@@ -42,10 +42,10 @@ enum DebugLoggingLevel: String, Codable, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .none: return "None"
-        case .error: return "Errors only"
-        case .info: return "Info"
-        case .verbose: return "Verbose"
+        case .none: return String(localized: "None")
+        case .error: return String(localized: "Errors only")
+        case .info: return String(localized: "Info")
+        case .verbose: return String(localized: "Verbose")
         }
     }
 }

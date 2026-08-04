@@ -63,7 +63,7 @@ final class SettingsStore: ObservableObject {
     @MainActor
     func exportToFile() {
         let panel = NSSavePanel()
-        panel.title = "Export SmartClose Settings"
+        panel.title = String(localized: "Export SmartClose Settings")
         panel.allowedContentTypes = [.json]
         panel.nameFieldStringValue = "SmartCloseSettings.json"
         if panel.runModal() == .OK, let url = panel.url {
@@ -79,7 +79,7 @@ final class SettingsStore: ObservableObject {
     @MainActor
     func importFromFile() {
         let panel = NSOpenPanel()
-        panel.title = "Import SmartClose Settings"
+        panel.title = String(localized: "Import SmartClose Settings")
         panel.allowedContentTypes = [.json]
         panel.allowsMultipleSelection = false
         if panel.runModal() == .OK, let url = panel.url {

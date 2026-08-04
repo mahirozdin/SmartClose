@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0
+- Fix: rapid multi-window `Cmd+W` sequences can leave a stale pre-close window count in macOS Accessibility, which prevented SmartClose from checking whether Terminal's final window had closed. SmartClose now arms verification for any confident positive pre-close count and still quits only after the post-close count reaches zero (#10).
+- Add a complete Russian interface covering onboarding, Settings, menu bar actions, permission and recovery states, diagnostics, app rules, and file panels (#14).
+
 ## 0.3.4
 - Fix: Safari can expose a minimized standard window as `AXDialog`, which made SmartClose incorrectly treat the remaining visible window as the last window even when minimized windows were configured to count. SmartClose now treats this case as ambiguous and safely passes the close through (#11).
 - Fix: hiding the menu bar icon no longer leaves Settings unreachable. Launching SmartClose again opens Settings so the icon can be restored (#11).

@@ -23,13 +23,13 @@ enum EventMonitorRuntimeState: String, Equatable {
     var label: String {
         switch self {
         case .idle:
-            return "Idle"
+            return String(localized: "Idle")
         case .disabled:
-            return "Disabled"
+            return String(localized: "Disabled")
         case .running:
-            return "Running"
+            return String(localized: "Running")
         case .failed:
-            return "Failed"
+            return String(localized: "Failed")
         }
     }
 }
@@ -47,13 +47,13 @@ struct PermissionDiagnosticsSnapshot: Equatable {
             kind: .accessibility,
             status: .unknown,
             action: .requestSystemPrompt,
-            message: "Checking the current macOS permission state."
+            message: String(localized: "Checking the current macOS permission state.")
         ),
         inputMonitoringRow: PermissionRowModel(
             kind: .inputMonitoring,
             status: .unknown,
             action: .requestSystemPrompt,
-            message: "Checking the current macOS permission state."
+            message: String(localized: "Checking the current macOS permission state.")
         ),
         eventMonitorState: .idle,
         eventMonitorMessage: nil
@@ -90,9 +90,9 @@ final class DiagnosticsStore: ObservableObject {
     }
 
     func frontmostAppSummary() -> String {
-        guard let app = NSWorkspace.shared.frontmostApplication else { return "Unknown" }
-        let name = app.localizedName ?? "Unknown"
-        let bundle = app.bundleIdentifier ?? "Unknown"
+        guard let app = NSWorkspace.shared.frontmostApplication else { return String(localized: "Unknown") }
+        let name = app.localizedName ?? String(localized: "Unknown")
+        let bundle = app.bundleIdentifier ?? String(localized: "Unknown")
         return "\(name) (\(bundle))"
     }
 }

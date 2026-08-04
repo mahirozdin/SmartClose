@@ -99,7 +99,7 @@ Release artifacts are written to `dist/<version>/`:
 - Finder excluded.
 - Chrome with multiple windows.
 - VS Code with multiple windows.
-- Terminal excluded by default.
+- Terminal with multiple windows, including rapid consecutive Cmd+W closes when experimental Cmd+W handling is enabled.
 - Settings import/export works.
 - Pause mode works.
 - Launch at login works.

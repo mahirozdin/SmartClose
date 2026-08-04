@@ -106,14 +106,14 @@ struct SettingsView: View {
                 Toggle("Use allow list (only apply to listed apps)", isOn: settingsStore.binding(for: \.useAllowList))
 
                 EditableStringList(
-                    title: "Allow List",
-                    placeholder: "com.example.app",
+                    title: String(localized: "Allow List"),
+                    placeholder: String(localized: "com.example.app"),
                     items: settingsStore.binding(for: \.allowedBundleIDs)
                 )
 
                 EditableStringList(
-                    title: "Ignore List",
-                    placeholder: "com.apple.finder",
+                    title: String(localized: "Ignore List"),
+                    placeholder: String(localized: "com.apple.finder"),
                     items: settingsStore.binding(for: \.ignoredBundleIDs)
                 )
 

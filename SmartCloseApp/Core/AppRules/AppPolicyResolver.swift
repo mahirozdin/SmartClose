@@ -33,18 +33,18 @@ final class AppPolicyResolver {
 
     func resolve(bundleID: String, settings: Settings) -> ResolvedPolicy {
         if matchesAny(patterns: hardExcludedBundleIDs, bundleID: bundleID) {
-            return ResolvedPolicy(behavior: .disabled, matchedRule: "Hard exclusion", isExcluded: true)
+            return ResolvedPolicy(behavior: .disabled, matchedRule: String(localized: "Hard exclusion"), isExcluded: true)
         }
 
         if settings.useAllowList {
             let isAllowed = matchesAny(patterns: settings.allowedBundleIDs, bundleID: bundleID)
             if !isAllowed {
-                return ResolvedPolicy(behavior: .disabled, matchedRule: "Allow list", isExcluded: true)
+                return ResolvedPolicy(behavior: .disabled, matchedRule: String(localized: "Allow list"), isExcluded: true)
             }
         }
 
         if matchesAny(patterns: settings.ignoredBundleIDs, bundleID: bundleID) {
-            return ResolvedPolicy(behavior: .disabled, matchedRule: "Ignored bundle", isExcluded: true)
+            return ResolvedPolicy(behavior: .disabled, matchedRule: String(localized: "Ignored bundle"), isExcluded: true)
         }
 
         if let exactRule = settings.perAppRules[bundleID] {

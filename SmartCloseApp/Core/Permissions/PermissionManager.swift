@@ -12,18 +12,18 @@ enum PermissionKind: String, Identifiable {
     var title: String {
         switch self {
         case .accessibility:
-            return "Accessibility"
+            return String(localized: "Accessibility")
         case .inputMonitoring:
-            return "Input Monitoring"
+            return String(localized: "Input Monitoring")
         }
     }
 
     var reason: String {
         switch self {
         case .accessibility:
-            return "Needed to inspect windows and confirm the red close button safely."
+            return String(localized: "Needed to inspect windows and confirm the red close button safely.")
         case .inputMonitoring:
-            return "Needed to receive global close-button clicks before macOS handles them."
+            return String(localized: "Needed to receive global close-button clicks before macOS handles them.")
         }
     }
 }
@@ -38,15 +38,15 @@ enum PermissionRowStatus: String, Equatable {
     var label: String {
         switch self {
         case .unknown:
-            return "Checking"
+            return String(localized: "Checking")
         case .missing:
-            return "Missing"
+            return String(localized: "Missing")
         case .requesting:
-            return "Waiting for macOS"
+            return String(localized: "Waiting for macOS")
         case .granted:
-            return "Granted"
+            return String(localized: "Granted")
         case .recoveryNeeded:
-            return "Needs relaunch"
+            return String(localized: "Needs relaunch")
         }
     }
 }
@@ -60,11 +60,11 @@ enum PermissionRowAction: Equatable {
     var title: String? {
         switch self {
         case .requestSystemPrompt:
-            return "Grant Access"
+            return String(localized: "Grant Access")
         case .openSettings:
-            return "Open Settings"
+            return String(localized: "Open Settings")
         case .relaunchApp:
-            return "Relaunch SmartClose"
+            return String(localized: "Relaunch SmartClose")
         case .none:
             return nil
         }
@@ -275,18 +275,18 @@ final class PermissionManager: ObservableObject, PermissionManaging {
     private var message: String {
         switch rowStatus {
         case .unknown:
-            return "Checking the current macOS permission state."
+            return String(localized: "Checking the current macOS permission state.")
         case .missing:
             if hasRequestedSystemPrompt {
-                return "If the prompt did not appear or was denied, enable SmartClose manually in System Settings."
+                return String(localized: "If the prompt did not appear or was denied, enable SmartClose manually in System Settings.")
             }
-            return "SmartClose needs this before it can inspect windows."
+            return String(localized: "SmartClose needs this before it can inspect windows.")
         case .requesting:
-            return "Approve SmartClose in the macOS prompt to continue."
+            return String(localized: "Approve SmartClose in the macOS prompt to continue.")
         case .granted:
-            return "SmartClose can inspect windows."
+            return String(localized: "SmartClose can inspect windows.")
         case .recoveryNeeded:
-            return recoveryMessage ?? "macOS granted access, but SmartClose needs a relaunch to start monitoring."
+            return recoveryMessage ?? String(localized: "macOS granted access, but SmartClose needs a relaunch to start monitoring.")
         }
     }
 
@@ -310,7 +310,7 @@ final class PermissionManager: ObservableObject, PermissionManaging {
             isGranted = true
             rowStatus = .granted
         case .recovery:
-            recoveryMessage = "Relaunch SmartClose to reattach its event monitor."
+            recoveryMessage = String(localized: "Relaunch SmartClose to reattach its event monitor.")
             isGranted = true
             rowStatus = .recoveryNeeded
         }
