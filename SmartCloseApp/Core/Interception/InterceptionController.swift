@@ -37,6 +37,7 @@ final class InterceptionController: @unchecked Sendable {
     private let policyResolver: AppPolicyResolver
     private let actionExecutor: ActionExecutor
     private let diagnosticsStore: DiagnosticsStore
+    private let ownWindowHitTester: OwnWindowHitTester
     private let selfBundleID = Bundle.main.bundleIdentifier
 
     init(
@@ -48,7 +49,8 @@ final class InterceptionController: @unchecked Sendable {
         decisionEngine: DecisionEngine,
         policyResolver: AppPolicyResolver,
         actionExecutor: ActionExecutor,
-        diagnosticsStore: DiagnosticsStore
+        diagnosticsStore: DiagnosticsStore,
+        ownWindowHitTester: OwnWindowHitTester = OwnWindowHitTester()
     ) {
         self.settingsStore = settingsStore
         self.eventMonitor = eventMonitor
@@ -59,6 +61,7 @@ final class InterceptionController: @unchecked Sendable {
         self.policyResolver = policyResolver
         self.actionExecutor = actionExecutor
         self.diagnosticsStore = diagnosticsStore
+        self.ownWindowHitTester = ownWindowHitTester
     }
 
     @discardableResult
@@ -99,6 +102,12 @@ final class InterceptionController: @unchecked Sendable {
         }
 
         let point = event.location
+        // Exclude SmartClose itself before touching Accessibility: an AX hit-test on our own
+        // window runs SwiftUI on this event-tap thread and traps on macOS 27 (issue #20).
+        guard !ownWindowHitTester.isOwnWindow(at: point) else {
+            if logVerbose { Log.interception.debug("Pass-through: click on SmartClose's own window") }
+            return .passThrough
+        }
         guard let element = axInspector.elementAtScreenPoint(point) else {
             if logVerbose { Log.interception.debug("Pass-through: no AX element at point") }
             return .passThrough
