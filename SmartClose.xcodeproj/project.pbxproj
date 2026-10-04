@@ -35,6 +35,8 @@
 		B28268FB6CEE456E9121F7DF /* MockAXInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAAF2EBC3ABB429B90D6ACF5 /* MockAXInspector.swift */; };
 		BAD95F7B36A444F1A547522C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 299C645ABFD845FDA1738AA8 /* AppDelegate.swift */; };
 		C0E097FEC40449348E3EFD49 /* EventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA1A1A94DFAB4A4CB16F5957 /* EventMonitor.swift */; };
+		A7C1E0F2B3D4456789ABCD01 /* OwnWindowHitTester.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C1E0F2B3D4456789ABCD02 /* OwnWindowHitTester.swift */; };
+		A7C1E0F2B3D4456789ABCD03 /* OwnWindowHitTesterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C1E0F2B3D4456789ABCD04 /* OwnWindowHitTesterTests.swift */; };
 		CA3C537F0BBF4DAE844C7954 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BBD3D5D2CD407893BF73BD /* SettingsView.swift */; };
 		CE90CD659B8245C5BA1A212B /* WildcardMatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E32D83316D7A490281267BF8 /* WildcardMatcherTests.swift */; };
 		D4DD62138034441F90D694D1 /* DiagnosticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FBA9C5345C942869A42E06B /* DiagnosticsView.swift */; };
@@ -109,6 +111,8 @@
 		E8065E0B058148EDB51B8AD2 /* AXInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXInspector.swift; sourceTree = "<group>"; };
 		E9C699AA66E24B5E8AFD4F6D /* EditableStringList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditableStringList.swift; sourceTree = "<group>"; };
 		EA1A1A94DFAB4A4CB16F5957 /* EventMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventMonitor.swift; sourceTree = "<group>"; };
+		A7C1E0F2B3D4456789ABCD02 /* OwnWindowHitTester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnWindowHitTester.swift; sourceTree = "<group>"; };
+		A7C1E0F2B3D4456789ABCD04 /* OwnWindowHitTesterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnWindowHitTesterTests.swift; sourceTree = "<group>"; };
 		EEFCD85DD4EB4800ABFAEE10 /* AppRulesEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRulesEditorView.swift; sourceTree = "<group>"; };
 		ACA7E700000000000000F1EF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B14A00000000000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -155,6 +159,7 @@
 			children = (
 				A676315AB0C94649A7EF1591 /* DecisionEngineTests.swift */,
 				7F9B9CA14620458A8EED3BEA /* AppPolicyResolverTests.swift */,
+				A7C1E0F2B3D4456789ABCD04 /* OwnWindowHitTesterTests.swift */,
 				E32D83316D7A490281267BF8 /* WildcardMatcherTests.swift */,
 				7A84C24BE9004EB8857A6790 /* WindowClassifierTests.swift */,
 				CAAF2EBC3ABB429B90D6ACF5 /* MockAXInspector.swift */,
@@ -317,6 +322,7 @@
 			isa = PBXGroup;
 			children = (
 				EA1A1A94DFAB4A4CB16F5957 /* EventMonitor.swift */,
+				A7C1E0F2B3D4456789ABCD02 /* OwnWindowHitTester.swift */,
 				867851A081EF42C5B41D1234 /* InterceptionController.swift */,
 				A6873A36F4524BCBA795181D /* ActionExecutor.swift */,
 			);
@@ -475,6 +481,7 @@
 			files = (
 				7AF7944BC6934DD7A8407A4A /* DecisionEngineTests.swift in Sources */,
 				3B0308D2C8194C40B965FAAD /* AppPolicyResolverTests.swift in Sources */,
+				A7C1E0F2B3D4456789ABCD03 /* OwnWindowHitTesterTests.swift in Sources */,
 				CE90CD659B8245C5BA1A212B /* WildcardMatcherTests.swift in Sources */,
 				A4C9A8D5197B451CB2A3C532 /* WindowClassifierTests.swift in Sources */,
 				B28268FB6CEE456E9121F7DF /* MockAXInspector.swift in Sources */,
@@ -506,6 +513,7 @@
 				D56AF3A205FA4C8299512F80 /* DiagnosticsStore.swift in Sources */,
 				D4DD62138034441F90D694D1 /* DiagnosticsView.swift in Sources */,
 				C0E097FEC40449348E3EFD49 /* EventMonitor.swift in Sources */,
+				A7C1E0F2B3D4456789ABCD01 /* OwnWindowHitTester.swift in Sources */,
 				330E56BBC35D46C0A4925AD0 /* InterceptionController.swift in Sources */,
 				38DB639A12964410B4754E43 /* ActionExecutor.swift in Sources */,
 				15777E64EBF94084A9F272A8 /* AXInspector.swift in Sources */,
@@ -549,7 +557,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = WWRZ5CG3DW;
 				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = "SmartCloseApp/Resources/Info-Debug.plist";
@@ -559,7 +567,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.4.0;
+				MARKETING_VERSION = 0.4.1;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartclose.app;
 				PRODUCT_NAME = SmartClose;
@@ -621,7 +629,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = WWRZ5CG3DW;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = SmartCloseApp/Resources/Info.plist;
@@ -631,7 +639,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.4.0;
+				MARKETING_VERSION = 0.4.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartclose.app;
 				PRODUCT_NAME = SmartClose;
 				SWIFT_EMIT_LOC_STRINGS = YES;

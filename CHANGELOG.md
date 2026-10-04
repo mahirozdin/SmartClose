@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.1
+- Fix: on macOS 27, clicking anywhere in SmartClose's own Settings window (or its menu bar icon) while monitoring was active could crash SmartClose with `EXC_BREAKPOINT`. The event monitor ran an Accessibility hit-test against SmartClose itself, which made SwiftUI update off the main thread. SmartClose now recognizes its own windows from the WindowServer window list before any Accessibility query and passes those clicks straight through. Behavior on older macOS versions is unchanged (#20).
+
 ## 0.4.0
 - Fix: rapid multi-window `Cmd+W` sequences can leave a stale pre-close window count in macOS Accessibility, which prevented SmartClose from checking whether Terminal's final window had closed. SmartClose now arms verification for any confident positive pre-close count and still quits only after the post-close count reaches zero (#10).
 - Add a complete Russian interface covering onboarding, Settings, menu bar actions, permission and recovery states, diagnostics, app rules, and file panels (#14).
