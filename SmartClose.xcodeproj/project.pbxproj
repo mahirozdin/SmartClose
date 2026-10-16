@@ -50,6 +50,8 @@
 		B14A00000000000000000002 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B14A00000000000000000001 /* Localizable.xcstrings */; };
 		5E7715C0DAB1E00000000002 /* SettingsCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7715C0DAB1E00000000001 /* SettingsCodableTests.swift */; };
 		5A8B1E00000000000000F11E /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 5A8B1E00000000000000D00D /* Sparkle */; };
+		A7C1E0F2B3D4456789ABCD05 /* AppPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C1E0F2B3D4456789ABCD06 /* AppPresentation.swift */; };
+		A7C1E0F2B3D4456789ABCD07 /* AppPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C1E0F2B3D4456789ABCD08 /* AppPresentationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -117,6 +119,8 @@
 		ACA7E700000000000000F1EF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B14A00000000000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		5E7715C0DAB1E00000000001 /* SettingsCodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCodableTests.swift; sourceTree = "<group>"; };
+		A7C1E0F2B3D4456789ABCD06 /* AppPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPresentation.swift; sourceTree = "<group>"; };
+		A7C1E0F2B3D4456789ABCD08 /* AppPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPresentationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -160,6 +164,7 @@
 				A676315AB0C94649A7EF1591 /* DecisionEngineTests.swift */,
 				7F9B9CA14620458A8EED3BEA /* AppPolicyResolverTests.swift */,
 				A7C1E0F2B3D4456789ABCD04 /* OwnWindowHitTesterTests.swift */,
+				A7C1E0F2B3D4456789ABCD08 /* AppPresentationTests.swift */,
 				E32D83316D7A490281267BF8 /* WildcardMatcherTests.swift */,
 				7A84C24BE9004EB8857A6790 /* WindowClassifierTests.swift */,
 				CAAF2EBC3ABB429B90D6ACF5 /* MockAXInspector.swift */,
@@ -261,6 +266,7 @@
 			children = (
 				299C645ABFD845FDA1738AA8 /* AppDelegate.swift */,
 				6FC75623DC3445D5A4BB332C /* AppModel.swift */,
+				A7C1E0F2B3D4456789ABCD06 /* AppPresentation.swift */,
 				4C2A8E4E5C8D4A7BA1B5D72A /* main.swift */,
 			);
 			path = App;
@@ -482,6 +488,7 @@
 				7AF7944BC6934DD7A8407A4A /* DecisionEngineTests.swift in Sources */,
 				3B0308D2C8194C40B965FAAD /* AppPolicyResolverTests.swift in Sources */,
 				A7C1E0F2B3D4456789ABCD03 /* OwnWindowHitTesterTests.swift in Sources */,
+				A7C1E0F2B3D4456789ABCD07 /* AppPresentationTests.swift in Sources */,
 				CE90CD659B8245C5BA1A212B /* WildcardMatcherTests.swift in Sources */,
 				A4C9A8D5197B451CB2A3C532 /* WindowClassifierTests.swift in Sources */,
 				B28268FB6CEE456E9121F7DF /* MockAXInspector.swift in Sources */,
@@ -504,6 +511,7 @@
 			files = (
 				BAD95F7B36A444F1A547522C /* AppDelegate.swift in Sources */,
 				A4230273F28340E8A4E8068E /* AppModel.swift in Sources */,
+				A7C1E0F2B3D4456789ABCD05 /* AppPresentation.swift in Sources */,
 				6D2B9C4F4C5B4F6AA1D4BBA1 /* main.swift in Sources */,
 				6F3A907694CB4603B21A6251 /* StatusMenuController.swift in Sources */,
 				CA3C537F0BBF4DAE844C7954 /* SettingsView.swift in Sources */,

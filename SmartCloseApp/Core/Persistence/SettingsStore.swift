@@ -125,6 +125,11 @@ final class SettingsStore: ObservableObject {
 
         let defaults = UserDefaults(suiteName: suiteName) ?? .standard
         defaults.removePersistentDomain(forName: suiteName)
+        // UI test runners can have a different preferences container. Pass the
+        // fixture into the app instead of relying on cross-process suite writes.
+        if let json = environment["SMARTCLOSE_TEST_SETTINGS_JSON"], let data = json.data(using: .utf8) {
+            defaults.set(data, forKey: "SmartClose.Settings")
+        }
         return defaults
     }
 }

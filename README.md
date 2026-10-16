@@ -64,7 +64,9 @@ Each release also includes a notarized ZIP of the same app bundle and a SHA-256 
 - Pause mode
 - Launch at login
 
-If you hide the menu bar icon, launch SmartClose again from Applications, Spotlight, or Finder to reopen Settings and restore the icon.
+After setup, **Launch at login** starts SmartClose without opening Settings, whether the menu bar icon is shown or hidden. To open Settings, launch SmartClose from Applications, Spotlight, or Finder; this also works when it is already running with its icon hidden.
+
+The initial setup still opens until it is completed. Necessary macOS permission prompts and Sparkle update dialogs retain their normal behavior.
 
 ### Cmd+W handling (experimental)
 
