@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Fix: launch silently at login after setup, including when the menu bar icon is hidden. Explicitly launching or reopening SmartClose opens Settings regardless of icon visibility; incomplete setup continues to show onboarding (#23).
+
 ## 0.4.1
 - Fix: on macOS 27, clicking anywhere in SmartClose's own Settings window (or its menu bar icon) while monitoring was active could crash SmartClose with `EXC_BREAKPOINT`. The event monitor ran an Accessibility hit-test against SmartClose itself, which made SwiftUI update off the main thread. SmartClose now recognizes its own windows from the WindowServer window list before any Accessibility query and passes those clicks straight through. Behavior on older macOS versions is unchanged (#20).
 

@@ -15,8 +15,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var updaterBridge: UpdaterBridge!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        let launchReason = AppLaunchReason(appleEvent: NSAppleEventManager.shared().currentAppleEvent)
         let isFirstRun = !appModel.settingsStore.settings.firstRunCompleted
-        Log.app.info("App did finish launching. firstRun=\(isFirstRun)")
+        let presentation = AppPresentation.onLaunch(firstRunCompleted: !isFirstRun, reason: launchReason)
+        Log.app.info("App did finish launching. firstRun=\(isFirstRun) reason=\(launchReason.rawValue, privacy: .public)")
         NSApp.setActivationPolicy(isFirstRun ? .regular : .accessory)
 
         // Sparkle auto-updates. Starts checking on launch; shows its own first-run consent prompt.
@@ -32,31 +34,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             onQuit: { NSApp.terminate(nil) }
         )
 
-        if isFirstRun {
+        if presentation != .none {
             DispatchQueue.main.async { [weak self] in
-                Log.app.info("Opening onboarding window (first run)")
-                self?.openOnboarding()
-            }
-        } else if !appModel.settingsStore.settings.showMenuBarIcon {
-            // The menubar icon is normally the only way to reach Settings in this accessory app.
-            // When a user hides it, launching the app again provides a recovery path rather than
-            // leaving the running app with no visible UI. Keep onboarding above this path so
-            // first-run users still complete setup first.
-            DispatchQueue.main.async { [weak self] in
-                Log.app.info("Opening settings window because the menu-bar icon is hidden")
-                self?.openSettings()
+                self?.present(presentation)
             }
         }
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        guard !appModel.settingsStore.settings.showMenuBarIcon else {
-            return false
-        }
-
-        Log.app.info("Opening settings window after app reopen because the menu-bar icon is hidden")
-        openSettings()
+        Log.app.info("Showing main window after user reopened the app")
+        present(.onUserRequest(firstRunCompleted: appModel.settingsStore.settings.firstRunCompleted))
         return false
+    }
+
+    private func present(_ presentation: AppPresentation) {
+        switch presentation {
+        case .none:
+            break
+        case .onboarding:
+            openOnboarding()
+        case .settings:
+            openSettings()
+        }
     }
 
     private func openSettings() {
@@ -69,6 +68,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if settingsWindowController == nil {
             settingsWindowController = HostingWindowController(title: String(localized: "SmartClose Settings"), rootView: AnyView(view))
         }
+        settingsWindowController?.window?.deminiaturize(nil)
         settingsWindowController?.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
@@ -102,6 +102,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if onboardingWindowController == nil {
             onboardingWindowController = HostingWindowController(title: String(localized: "Welcome to SmartClose"), rootView: AnyView(view), size: NSSize(width: 560, height: 420))
         }
+        onboardingWindowController?.window?.deminiaturize(nil)
         onboardingWindowController?.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
