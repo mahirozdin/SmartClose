@@ -9,6 +9,8 @@ It uses Accessibility APIs to inspect windows and detect the close button reliab
 ## Can I exclude apps?
 Yes. Use the ignore list or per-app rules in Settings.
 
+Rules match the bundle identifier of the app that owns the window. The Diagnostics view shows that identifier for every decision. Some apps run their windows in a separate UI app nested inside a faceless host app. Docker Desktop is one example: `com.electron.dockerdesktop` runs inside `com.docker.docker`. SmartClose applies rules for such a host app to the nested app as well, so either identifier works. If both identifiers have per-app rules, the nested app's own rule wins.
+
 ## Can SmartClose run without a menu bar icon or startup window?
 Yes. Complete setup, enable **Launch at login**, and turn off **Show menu bar icon** in Settings. Subsequent login launches do not open a window. Monitoring continues in the background when SmartClose is enabled and both required permissions are granted.
 

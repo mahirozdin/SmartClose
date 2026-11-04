@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Fix: ignore-list entries and per-app rules for Docker Desktop (`com.docker.docker`) had no effect, so SmartClose still quit Docker Desktop when its window was closed. Docker Desktop's windows belong to a UI app nested inside the faceless `Docker.app` agent (`com.electron.dockerdesktop`). SmartClose now also applies rules written for the faceless host app that embeds the window's app. The app's own per-app rules still take precedence, and regular apps that bundle other apps (for example Xcode and Simulator) are unaffected. Diagnostics name the host when its rule decided the outcome (#25).
 - Fix: launch silently at login after setup, including when the menu bar icon is hidden. Explicitly launching or reopening SmartClose opens Settings regardless of icon visibility; incomplete setup continues to show onboarding (#23).
 
 ## 0.4.1

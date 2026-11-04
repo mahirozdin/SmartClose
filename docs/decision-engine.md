@@ -22,3 +22,17 @@ If SmartClose cannot determine the role, subrole, or visibility/minimized state 
 
 ## Why fail-safe matters
 Accessibility metadata varies by app. A conservative default prevents incorrect quits in apps that expose unusual window structures.
+
+## App rule resolution
+Rules are matched against the bundle identifier of the process that owns the clicked window.
+If that app is nested inside another app bundle whose `Info.plist` marks it faceless
+(`LSUIElement` or `LSBackgroundOnly`), the host's identifier is also considered. Docker Desktop
+is an example: its windows belong to `com.electron.dockerdesktop` inside `com.docker.docker`.
+- Hard exclusions, the allow list, and the ignore list match either identifier. An exclusion can
+  only make SmartClose fall back to the system's normal close.
+- Per-app rules prefer the window owner's own rule (exact, then the longest wildcard) and fall
+  back to the host's rule.
+- Regular apps that bundle other apps (for example Xcode and Simulator) are not hosts, so their
+  rules do not apply to the bundled apps.
+The host lookup runs only after a close button is detected. It reads `Info.plist` once per app
+and caches the result.
