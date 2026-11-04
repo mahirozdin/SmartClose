@@ -38,6 +38,7 @@ final class InterceptionController: @unchecked Sendable {
     private let actionExecutor: ActionExecutor
     private let diagnosticsStore: DiagnosticsStore
     private let ownWindowHitTester: OwnWindowHitTester
+    private let hostAppResolver: HostAppResolver
     private let selfBundleID = Bundle.main.bundleIdentifier
 
     init(
@@ -50,7 +51,8 @@ final class InterceptionController: @unchecked Sendable {
         policyResolver: AppPolicyResolver,
         actionExecutor: ActionExecutor,
         diagnosticsStore: DiagnosticsStore,
-        ownWindowHitTester: OwnWindowHitTester = OwnWindowHitTester()
+        ownWindowHitTester: OwnWindowHitTester = OwnWindowHitTester(),
+        hostAppResolver: HostAppResolver = HostAppResolver()
     ) {
         self.settingsStore = settingsStore
         self.eventMonitor = eventMonitor
@@ -62,6 +64,7 @@ final class InterceptionController: @unchecked Sendable {
         self.actionExecutor = actionExecutor
         self.diagnosticsStore = diagnosticsStore
         self.ownWindowHitTester = ownWindowHitTester
+        self.hostAppResolver = hostAppResolver
     }
 
     @discardableResult
@@ -133,16 +136,21 @@ final class InterceptionController: @unchecked Sendable {
             return .passThrough
         }
 
-        let resolved = policyResolver.resolve(bundleID: bundleID, settings: settings)
+        // Docker Desktop-style apps keep their windows in a UI app nested inside a faceless host;
+        // rules written for the host must apply too (issue #25).
+        let hostBundleID = hostAppResolver.hostBundleID(forAppAt: runningApp.bundleURL)
+        let resolved = policyResolver.resolve(bundleID: bundleID, hostBundleID: hostBundleID, settings: settings)
+        let policyDetails = Self.hostMatchDetails(resolved)
         if resolved.isExcluded {
-            if logInfo { Log.interception.info("Pass-through: excluded by policy (\(resolved.matchedRule ?? "none")) bundle=\(bundleID)") }
+            if logInfo { Log.interception.info("Pass-through: excluded by policy (\(resolved.matchedRule ?? "none")) bundle=\(bundleID) host=\(hostBundleID ?? "none")") }
             logDecision(
                 app: runningApp,
                 bundleID: bundleID,
                 decision: DecisionResult(action: .passThrough, reason: String(localized: "Excluded by policy")),
                 windowCount: nil,
                 ignoredCount: nil,
-                actionTaken: String(localized: "None")
+                actionTaken: String(localized: "None"),
+                details: policyDetails
             )
             return .passThrough
         }
@@ -189,7 +197,8 @@ final class InterceptionController: @unchecked Sendable {
                 decision: decision,
                 windowCount: windowCountResult?.count,
                 ignoredCount: windowCountResult?.ignoredCount,
-                actionTaken: success ? String(localized: "Requested quit") : String(localized: "Quit request failed")
+                actionTaken: success ? String(localized: "Requested quit") : String(localized: "Quit request failed"),
+                details: policyDetails
             )
             return .swallow
         }
@@ -200,7 +209,8 @@ final class InterceptionController: @unchecked Sendable {
             decision: decision,
             windowCount: windowCountResult?.count,
             ignoredCount: windowCountResult?.ignoredCount,
-            actionTaken: String(localized: "Passed through")
+            actionTaken: String(localized: "Passed through"),
+            details: policyDetails
         )
         return .passThrough
     }
@@ -231,7 +241,8 @@ final class InterceptionController: @unchecked Sendable {
 
         // Never act on SmartClose itself, and honor the resolved Cmd+W policy.
         guard bundleID != selfBundleID else { return }
-        guard policyResolver.cmdWEnabled(bundleID: bundleID, settings: settings) else { return }
+        let hostBundleID = hostAppResolver.hostBundleID(forAppAt: app.bundleURL)
+        guard policyResolver.cmdWEnabled(bundleID: bundleID, hostBundleID: hostBundleID, settings: settings) else { return }
 
         // Count windows BEFORE the app handles Cmd+W. The keystroke has only been observed
         // (the event tap runs before delivery), so the target window is still open here. Arm for
@@ -256,6 +267,7 @@ final class InterceptionController: @unchecked Sendable {
             self?.verifyAndMaybeQuitAfterCmdW(
                 pid: pid,
                 bundleID: bundleID,
+                hostBundleID: hostBundleID,
                 windowsBefore: windowsBefore,
                 settings: settings,
                 verificationPolicy: verificationPolicy,
@@ -268,6 +280,7 @@ final class InterceptionController: @unchecked Sendable {
     private func verifyAndMaybeQuitAfterCmdW(
         pid: pid_t,
         bundleID: String,
+        hostBundleID: String?,
         windowsBefore: WindowCountResult,
         settings: Settings,
         verificationPolicy: CmdWVerificationPolicy,
@@ -285,7 +298,7 @@ final class InterceptionController: @unchecked Sendable {
             isEnabled: settings.isEnabled,
             isPaused: settings.isPaused,
             permissionGranted: true,
-            resolvedPolicy: policyResolver.resolve(bundleID: bundleID, settings: settings),
+            resolvedPolicy: policyResolver.resolve(bundleID: bundleID, hostBundleID: hostBundleID, settings: settings),
             windowsBefore: windowsBefore,
             windowsAfter: windowsAfter
         )
@@ -310,6 +323,7 @@ final class InterceptionController: @unchecked Sendable {
                 self?.verifyAndMaybeQuitAfterCmdW(
                     pid: pid,
                     bundleID: bundleID,
+                    hostBundleID: hostBundleID,
                     windowsBefore: windowsBefore,
                     settings: settings,
                     verificationPolicy: verificationPolicy,
@@ -355,6 +369,12 @@ final class InterceptionController: @unchecked Sendable {
             parts.append("reasons \(result.reasons.joined(separator: ", "))")
         }
         return parts.joined(separator: ", ")
+    }
+
+    /// Diagnostics note naming the host app whose rule decided the outcome, if any.
+    static func hostMatchDetails(_ resolved: ResolvedPolicy) -> String? {
+        guard let host = resolved.viaHostBundleID else { return nil }
+        return "Rule matched host app \(host) (\(resolved.matchedRule ?? "default"))"
     }
 
     private func isCloseButton(element: AXUIElement) -> Bool {
