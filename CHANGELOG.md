@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.3
 - Add a per-app policy, **Quit when last document closes**, for apps that keep an empty window open after their last document closes. Adobe Illustrator keeps its empty Application Frame open as a standard window, so SmartClose never saw the last window close (#29). InDesign's windows could be classified as ambiguous, so SmartClose passed the close through (#30). With this policy the close goes through normally, then SmartClose asks the app for its document count over Apple Events and requests a normal quit only when none remain. It works for the red close button and, when enabled, `Cmd+W`. macOS asks once per app for Automation permission. If the count cannot be read, SmartClose does nothing.
 - Diagnostics for the red close button now list why windows were ignored or why the classification was ambiguous.
 - Per-app rules are now read leniently: a rule with a policy this version does not know is skipped instead of resetting all settings. Versions before this one cannot read the new policy, so downgrading after using it, or importing such a settings file into an older version, resets SmartClose's settings.
