@@ -12,6 +12,8 @@ protocol AXInspecting {
     func closeButton(ofWindow window: AXUIElement) -> AXUIElement?
     /// Screen frame (top-left origin, like `CGEvent.location`) from `AXPosition` and `AXSize`.
     func frame(of element: AXUIElement) -> CGRect?
+    /// The app's focused window (`AXFocusedWindow`).
+    func focusedWindow(ofApplication pid: pid_t) -> AXUIElement?
 }
 
 final class AXInspector: AXInspecting {
@@ -68,6 +70,10 @@ final class AXInspector: AXInspecting {
 
     func closeButton(ofWindow window: AXUIElement) -> AXUIElement? {
         attribute(window, kAXCloseButtonAttribute)
+    }
+
+    func focusedWindow(ofApplication pid: pid_t) -> AXUIElement? {
+        attribute(AXUIElementCreateApplication(pid), kAXFocusedWindowAttribute)
     }
 
     func frame(of element: AXUIElement) -> CGRect? {

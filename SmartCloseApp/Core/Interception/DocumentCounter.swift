@@ -54,6 +54,9 @@ final class AppleEventDocumentCounter: DocumentCounting {
     private static let countElementsClass = AEEventClass(kAECoreSuite)
     private static let countElementsID = AEEventID(kAECountElements)
     private static let documentClass = DescType(0x646F_6375) // 'docu'
+    /// `kAEDoNotPromptForUserConsent`: never block on the Automation prompt here. Permission is
+    /// requested when the rule is picked, or right after a check reports it missing.
+    private static let doNotPromptForConsent = NSAppleEventDescriptor.SendOptions(rawValue: 0x0002_0000)
 
     func documentCount(for pid: pid_t, timeout: TimeInterval) -> DocumentCountResult {
         let target = NSAppleEventDescriptor(processIdentifier: pid)
@@ -69,18 +72,74 @@ final class AppleEventDocumentCounter: DocumentCounting {
 
         let reply: NSAppleEventDescriptor
         do {
-            reply = try event.sendEvent(options: [.waitForReply], timeout: timeout)
+            reply = try event.sendEvent(options: [.waitForReply, Self.doNotPromptForConsent], timeout: timeout)
         } catch let error as NSError {
             return .failed(OSStatus(truncatingIfNeeded: error.code))
         }
+        return Self.parseCountReply(reply)
+    }
 
-        if let errorNumber = reply.paramDescriptor(forKeyword: AEKeyword(keyErrorNumber))?.int32Value, errorNumber != 0 {
-            return .failed(errorNumber)
+    /// Reads the reply to `count documents`. Only a real integer counts: `int32Value` returns 0
+    /// for anything it cannot read (missing value, text, a list), and 0 means "quit", so every
+    /// other reply is a failure.
+    static func parseCountReply(_ reply: NSAppleEventDescriptor) -> DocumentCountResult {
+        if let errorDescriptor = reply.paramDescriptor(forKeyword: AEKeyword(keyErrorNumber)) {
+            let errorNumber = errorDescriptor.coerce(toDescriptorType: DescType(typeSInt32))?.int32Value ?? OSStatus(errAEEventFailed)
+            if errorNumber != 0 {
+                return .failed(errorNumber)
+            }
         }
-        guard let value = reply.paramDescriptor(forKeyword: AEKeyword(keyDirectObject)) else {
+        guard
+            let value = reply.paramDescriptor(forKeyword: AEKeyword(keyDirectObject)),
+            Self.integerTypes.contains(value.descriptorType),
+            let integer = value.coerce(toDescriptorType: DescType(typeSInt32)),
+            integer.int32Value >= 0
+        else {
             return .failed(OSStatus(errAECoercionFail))
         }
-        return .count(Int(value.int32Value))
+        return .count(Int(integer.int32Value))
+    }
+
+    private static let integerTypes: Set<DescType> = [
+        DescType(typeSInt16), DescType(typeSInt32), DescType(typeSInt64),
+        DescType(typeUInt16), DescType(typeUInt32), DescType(typeUInt64)
+    ]
+}
+
+/// Latest document check per app. A newer close replaces an older check for the same app, so one
+/// close produces one decision and one diagnostics entry. Thread-safe.
+final class DocumentCheckTokens: @unchecked Sendable {
+    private let lock = NSLock()
+    private var tokens: [pid_t: UUID] = [:]
+
+    /// Starts a check for `pid`, superseding any running one.
+    func begin(pid: pid_t) -> UUID {
+        let token = UUID()
+        lock.lock()
+        tokens[pid] = token
+        lock.unlock()
+        return token
+    }
+
+    func isCurrent(pid: pid_t, token: UUID) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return tokens[pid] == token
+    }
+
+    func finish(pid: pid_t, token: UUID) {
+        lock.lock()
+        if tokens[pid] == token {
+            tokens.removeValue(forKey: pid)
+        }
+        lock.unlock()
+    }
+
+    /// Cancels every running check (monitoring stopped).
+    func cancelAll() {
+        lock.lock()
+        tokens.removeAll()
+        lock.unlock()
     }
 }
 
@@ -121,13 +180,21 @@ struct DocumentVerificationPolicy: Equatable {
 enum AutomationPermission {
     private static let queue = DispatchQueue(label: "SmartClose.AutomationPermission", qos: .utility)
 
-    /// Requests Automation access for every running app matching `pattern` (bundle id or
-    /// wildcard). Apps that are not running are asked the first time SmartClose checks them.
+    /// Requests Automation access for every running regular app (one with a Dock icon) matching
+    /// `pattern` (bundle id or wildcard). Background helpers never get a prompt. Apps that are not
+    /// running are asked right after their first document check reports permission missing.
     static func requestForRunningApps(matching pattern: String) {
         let bundleIDs = Set(NSWorkspace.shared.runningApplications.compactMap { app -> String? in
-            guard let id = app.bundleIdentifier, WildcardMatcher.matches(pattern: pattern, value: id) else { return nil }
+            guard app.activationPolicy == .regular,
+                  let id = app.bundleIdentifier,
+                  WildcardMatcher.matches(pattern: pattern, value: id) else { return nil }
             return id
         })
+        request(bundleIDs: bundleIDs)
+    }
+
+    /// Asks for Automation access to these apps on a background queue (the prompt blocks).
+    static func request(bundleIDs: Set<String>) {
         guard !bundleIDs.isEmpty else { return }
         queue.async {
             for bundleID in bundleIDs {

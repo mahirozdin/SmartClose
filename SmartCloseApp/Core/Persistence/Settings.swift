@@ -173,7 +173,13 @@ extension Settings {
         ignoredBundleIDs = try container.decodeIfPresent([String].self, forKey: .ignoredBundleIDs) ?? defaults.ignoredBundleIDs
         useAllowList = try container.decodeIfPresent(Bool.self, forKey: .useAllowList) ?? defaults.useAllowList
         allowedBundleIDs = try container.decodeIfPresent([String].self, forKey: .allowedBundleIDs) ?? defaults.allowedBundleIDs
-        perAppRules = try container.decodeIfPresent([String: AppPolicy].self, forKey: .perAppRules) ?? defaults.perAppRules
+        // Decode rules leniently: a policy this build does not know (written by a newer version)
+        // drops only that rule instead of failing the whole settings file.
+        if let rawRules = try container.decodeIfPresent([String: String].self, forKey: .perAppRules) {
+            perAppRules = rawRules.compactMapValues { AppPolicy(rawValue: $0) }
+        } else {
+            perAppRules = defaults.perAppRules
+        }
         countMinimizedWindows = try container.decodeIfPresent(Bool.self, forKey: .countMinimizedWindows) ?? defaults.countMinimizedWindows
         countHiddenWindows = try container.decodeIfPresent(Bool.self, forKey: .countHiddenWindows) ?? defaults.countHiddenWindows
         diagnosticsEnabled = try container.decodeIfPresent(Bool.self, forKey: .diagnosticsEnabled) ?? defaults.diagnosticsEnabled

@@ -100,13 +100,20 @@ struct DecisionEngine {
 
     /// Decision after a close (red button or Cmd+W) in an app using the "Quit when last document
     /// closes" rule. The close itself always went through; SmartClose requests a normal quit only
-    /// when the app reports zero open documents. A count that cannot be read never quits.
+    /// when the app reports zero open documents **and** at most one standard window is left (the
+    /// empty application frame). A count that cannot be read never quits.
+    ///
+    /// - Parameter remainingStandardWindows: Countable standard windows after the close, from
+    ///   Accessibility. Only needed when the document count is zero; ambiguity is ignored here
+    ///   because the document count already decided. Several remaining windows mean the app is
+    ///   not really document-based, or other windows are still open, so it must not quit.
     func decideAfterDocumentClose(
         isEnabled: Bool,
         isPaused: Bool,
         permissionGranted: Bool,
         resolvedPolicy: ResolvedPolicy,
-        documentCount: DocumentCountResult?
+        documentCount: DocumentCountResult?,
+        remainingStandardWindows: Int? = nil
     ) -> DecisionResult {
         if !isEnabled {
             return DecisionResult(action: .passThrough, reason: String(localized: "SmartClose disabled"))
@@ -138,6 +145,12 @@ struct DecisionEngine {
             return DecisionResult(action: .passThrough, reason: String(localized: "Document count unavailable (Apple Events error \(Int(code)))"))
         case let .count(count)?:
             if count == 0 {
+                guard let remainingStandardWindows else {
+                    return DecisionResult(action: .passThrough, reason: String(localized: "Window count unavailable"))
+                }
+                if remainingStandardWindows > 1 {
+                    return DecisionResult(action: .passThrough, reason: String(localized: "Multiple windows open"))
+                }
                 return DecisionResult(action: .requestQuit, reason: String(localized: "Last document closed"))
             }
             return DecisionResult(action: .passThrough, reason: String(localized: "Documents still open"))

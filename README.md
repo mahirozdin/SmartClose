@@ -92,15 +92,19 @@ with the policy **Quit when last document closes**:
 - The red close button or `Cmd+W` always goes through normally, so the app
   closes the document itself and shows any save prompt.
 - SmartClose then asks the app for its document count over Apple Events (the
-  same as `tell application id "…" to count documents`) for a few seconds, and
-  requests a normal quit only when the app reports zero open documents.
+  same as `tell application id "…" to count documents`) for about 3 seconds,
+  and requests a normal quit only when the app reports zero open documents and
+  at most one standard window (the empty frame) is left. If you answer a save
+  prompt after that, the app stays open.
+- Closing a panel or dialog (or pressing `Cmd+W` in one) never quits.
 - If the count cannot be read (no permission, no reply, or the app does not
   support AppleScript documents), SmartClose does nothing.
 - `Cmd+W` still requires **Handle Cmd+W (experimental)** to be on.
 
 macOS asks once for permission to let SmartClose control that app
 (**Privacy & Security → Automation**). Use this rule only for apps that support
-AppleScript documents, such as Adobe Illustrator, InDesign, and Photoshop.
+AppleScript documents, such as Adobe Illustrator, InDesign, and Photoshop, and
+add it with the app's exact bundle ID rather than a wildcard.
 
 ## Permissions
 

@@ -31,8 +31,9 @@ enum DocumentCloseTrigger: String {
 }
 
 // All stored dependencies are immutable `let` references already shared with the event-tap
-// thread. The only mutable state, the active document-check tokens, is guarded by a lock, so the
-// controller is safe to hand to the verification closures used by the Cmd+W and document paths.
+// thread. The only mutable state (document-check tokens, the close-button miss log time and the
+// set of apps already asked for Automation) is guarded by locks, so the controller is safe to
+// hand to the verification closures used by the Cmd+W and document paths.
 final class InterceptionController: @unchecked Sendable {
     private let settingsStore: SettingsStore
     private let eventMonitor: EventMonitor
@@ -51,10 +52,15 @@ final class InterceptionController: @unchecked Sendable {
     /// Apple Events block until the app replies, so document checks run on their own queue,
     /// never on the event-tap thread or the main thread.
     private let documentQueue = DispatchQueue(label: "SmartClose.DocumentCount", qos: .userInitiated)
-    private let documentTokensLock = NSLock()
-    /// Latest document check per app. A newer close replaces an older check for the same app, so
-    /// one close produces one decision and one diagnostics entry.
-    private var documentTokens: [pid_t: UUID] = [:]
+    private let documentTokens = DocumentCheckTokens()
+    private let stateLock = NSLock()
+    /// Last time a missed close button in a document-rule app was written to Diagnostics.
+    private var lastCloseButtonMissLog: Date?
+    /// Apps already asked for Automation access after a check reported it missing.
+    private var automationRequestedBundleIDs: Set<String> = []
+    /// Size of the top-left window area that holds the traffic-light buttons. Used only to skip
+    /// Accessibility calls for clicks that cannot be on a close button.
+    static let windowControlsArea = CGSize(width: 120, height: 80)
 
     init(
         settingsStore: SettingsStore,
@@ -95,6 +101,7 @@ final class InterceptionController: @unchecked Sendable {
 
     func stop() {
         eventMonitor.stop()
+        documentTokens.cancelAll()
     }
 
     private func handle(type: CGEventType, event: CGEvent) -> EventDisposition {
@@ -304,7 +311,9 @@ final class InterceptionController: @unchecked Sendable {
 
     /// For apps using the document rule only: when the hit-test landed on something other than
     /// the close button, checks whether the click is inside the frame the window itself reports
-    /// for its `AXCloseButton`. Costs nothing unless some per-app rule uses the document rule.
+    /// for its `AXCloseButton`. Skipped entirely unless a per-app rule uses the document rule, and
+    /// clicks outside the top-left window-controls area of the app's frontmost window under the
+    /// pointer (from the WindowServer list, no Accessibility) never reach Accessibility.
     private func documentAwareCloseButton(at point: CGPoint, hitElement: AXUIElement, settings: Settings) -> AXUIElement? {
         guard settings.perAppRules.values.contains(.quitWhenLastDocumentCloses) else { return nil }
         guard let pid = axInspector.pid(of: hitElement),
@@ -314,10 +323,65 @@ final class InterceptionController: @unchecked Sendable {
         let hostBundleID = hostAppResolver.hostBundleID(forAppAt: app.bundleURL)
         let resolved = policyResolver.resolve(bundleID: bundleID, hostBundleID: hostBundleID, settings: settings)
         guard !resolved.isExcluded, resolved.behavior == .documentAware else { return nil }
-        guard let window = axInspector.windowForElement(hitElement),
-              let closeButton = axInspector.closeButton(ofWindow: window),
-              Self.closeButtonFrame(axInspector.frame(of: closeButton), contains: point) else { return nil }
-        return closeButton
+        guard Self.isInWindowControlsArea(point: point, pid: pid, windows: OwnWindowHitTester.onScreenWindows()) else { return nil }
+
+        let window = axInspector.windowForElement(hitElement)
+        let closeButton = window.flatMap { axInspector.closeButton(ofWindow: $0) }
+        let frame = closeButton.flatMap { axInspector.frame(of: $0) }
+        if let closeButton, Self.closeButtonFrame(frame, contains: point) {
+            return closeButton
+        }
+
+        // Record what the app exposed, so a report like issue #29 shows why no close was seen.
+        logCloseButtonMiss(
+            app: app,
+            bundleID: bundleID,
+            details: "Hit element role=\(axInspector.role(of: hitElement) ?? "none") subrole=\(axInspector.subrole(of: hitElement) ?? "none"); "
+                + "window=\(window == nil ? "none" : "found"); AXCloseButton=\(closeButton == nil ? "none" : "found"); "
+                + "frame=\(frame.map { "\(Int($0.minX)),\(Int($0.minY)) \(Int($0.width))x\(Int($0.height))" } ?? "none")"
+        )
+        return nil
+    }
+
+    /// Whether `point` lies in the top-left window-controls area of the frontmost on-screen window
+    /// under it, and that window belongs to `pid`. `windows` is front-to-back WindowServer order.
+    static func isInWindowControlsArea(point: CGPoint, pid: pid_t, windows: [OnScreenWindow]) -> Bool {
+        guard let window = windows.first(where: { $0.bounds.contains(point) }), window.ownerPID == pid else {
+            return false
+        }
+        return point.x - window.bounds.minX < windowControlsArea.width
+            && point.y - window.bounds.minY < windowControlsArea.height
+    }
+
+    /// At most one Diagnostics entry every 10 seconds.
+    private func logCloseButtonMiss(app: NSRunningApplication, bundleID: String, details: String) {
+        let now = Date()
+        stateLock.lock()
+        if let last = lastCloseButtonMissLog, now.timeIntervalSince(last) < 10 {
+            stateLock.unlock()
+            return
+        }
+        lastCloseButtonMissLog = now
+        stateLock.unlock()
+        logDecision(
+            app: app,
+            bundleID: bundleID,
+            decision: DecisionResult(action: .passThrough, reason: String(localized: "Close button not found")),
+            windowCount: nil,
+            ignoredCount: nil,
+            actionTaken: String(localized: "None"),
+            details: details
+        )
+    }
+
+    /// Asks once per session for Automation access to an app whose check reported it missing.
+    private func requestAutomationOnce(bundleID: String) {
+        stateLock.lock()
+        let isNew = automationRequestedBundleIDs.insert(bundleID).inserted
+        stateLock.unlock()
+        if isNew {
+            AutomationPermission.request(bundleIDs: [bundleID])
+        }
     }
 
     /// Whether `point` is inside a close button's Accessibility frame. Empty or missing frames
@@ -330,10 +394,7 @@ final class InterceptionController: @unchecked Sendable {
     // MARK: - Document checks ("Quit when last document closes")
 
     private func startDocumentVerification(pid: pid_t, bundleID: String, hostBundleID: String?, trigger: DocumentCloseTrigger) {
-        let token = UUID()
-        documentTokensLock.lock()
-        documentTokens[pid] = token
-        documentTokensLock.unlock()
+        let token = documentTokens.begin(pid: pid)
 
         let startedAt = Date()
         documentQueue.asyncAfter(deadline: .now() + documentVerificationPolicy.initialDelay) { [weak self] in
@@ -350,17 +411,11 @@ final class InterceptionController: @unchecked Sendable {
     }
 
     private func isCurrentDocumentCheck(pid: pid_t, token: UUID) -> Bool {
-        documentTokensLock.lock()
-        defer { documentTokensLock.unlock() }
-        return documentTokens[pid] == token
+        documentTokens.isCurrent(pid: pid, token: token)
     }
 
     private func finishDocumentCheck(pid: pid_t, token: UUID) {
-        documentTokensLock.lock()
-        if documentTokens[pid] == token {
-            documentTokens.removeValue(forKey: pid)
-        }
-        documentTokensLock.unlock()
+        documentTokens.finish(pid: pid, token: token)
     }
 
     private func verifyDocuments(
@@ -384,6 +439,21 @@ final class InterceptionController: @unchecked Sendable {
         let result = documentCounter.documentCount(for: pid, timeout: documentVerificationPolicy.requestTimeout)
         guard isCurrentDocumentCheck(pid: pid, token: token) else { return }
 
+        if result == .failed(DocumentCountResult.consentRequired) {
+            requestAutomationOnce(bundleID: bundleID)
+        }
+
+        // Zero documents is not enough on its own: at most one standard window (the empty
+        // application frame) may remain. Only read when it matters, to spare Accessibility calls.
+        var remainingWindows: Int?
+        if result == .count(0) {
+            remainingWindows = windowClassifier.classify(
+                windows: axInspector.windowInfos(for: pid),
+                appIsHidden: app.isHidden,
+                settings: settings
+            ).count
+        }
+
         let samples = samples + [result]
         let elapsed = Date().timeIntervalSince(startedAt)
         let resolved = policyResolver.resolve(bundleID: bundleID, hostBundleID: hostBundleID, settings: settings)
@@ -392,7 +462,8 @@ final class InterceptionController: @unchecked Sendable {
             isPaused: settings.isPaused,
             permissionGranted: true,
             resolvedPolicy: resolved,
-            documentCount: result
+            documentCount: result,
+            remainingStandardWindows: remainingWindows
         )
         let logInfo = settings.debugLoggingLevel == .info || settings.debugLoggingLevel == .verbose
         if logInfo {
@@ -409,7 +480,7 @@ final class InterceptionController: @unchecked Sendable {
                 windowCount: nil,
                 ignoredCount: nil,
                 actionTaken: success ? String(localized: "Requested quit") : String(localized: "Quit request failed"),
-                details: Self.documentCheckDetails(trigger: trigger, samples: samples, elapsed: elapsed)
+                details: Self.documentCheckDetails(trigger: trigger, samples: samples, elapsed: elapsed, remainingWindows: remainingWindows)
             )
             return
         }
@@ -440,22 +511,39 @@ final class InterceptionController: @unchecked Sendable {
             windowCount: nil,
             ignoredCount: nil,
             actionTaken: String(localized: "Passed through"),
-            details: Self.documentCheckDetails(trigger: trigger, samples: samples, elapsed: elapsed)
+            details: Self.documentCheckDetails(trigger: trigger, samples: samples, elapsed: elapsed, remainingWindows: remainingWindows)
         )
     }
 
-    static func documentCheckDetails(trigger: DocumentCloseTrigger, samples: [DocumentCountResult], elapsed: TimeInterval) -> String {
+    static func documentCheckDetails(
+        trigger: DocumentCloseTrigger,
+        samples: [DocumentCountResult],
+        elapsed: TimeInterval,
+        remainingWindows: Int? = nil
+    ) -> String {
         let source = trigger == .cmdW ? "Cmd+W" : "close button"
         let checks = samples.enumerated()
             .map { index, result in "check[\(index + 1)]=\(result.summary)" }
             .joined(separator: "; ")
-        return "Document check after \(source): \(checks); elapsed=\(String(format: "%.2f", elapsed))s"
+        let windows = remainingWindows.map { "; standard windows left \($0)" } ?? ""
+        return "Document check after \(source): \(checks)\(windows); elapsed=\(String(format: "%.2f", elapsed))s"
     }
 
     /// Window classification reasons worth showing in diagnostics, or nil when there are none.
+    /// Repeated reasons (one per window) are collapsed with a count.
     static func classificationDetails(_ result: WindowCountResult?) -> String? {
         guard let result, !result.reasons.isEmpty else { return nil }
-        return "Window classification: \(result.reasons.joined(separator: ", "))"
+        var order: [String] = []
+        var counts: [String: Int] = [:]
+        for reason in result.reasons {
+            if counts[reason] == nil { order.append(reason) }
+            counts[reason, default: 0] += 1
+        }
+        let collapsed = order.map { reason in
+            let count = counts[reason] ?? 1
+            return count > 1 ? "\(reason) (×\(count))" : reason
+        }
+        return "Window classification: \(collapsed.joined(separator: ", "))"
     }
 
     static func joinedDetails(_ parts: String?...) -> String? {
@@ -496,6 +584,16 @@ final class InterceptionController: @unchecked Sendable {
         // document count once it has handled Cmd+W (issues #29, #30).
         let resolved = policyResolver.resolve(bundleID: bundleID, hostBundleID: hostBundleID, settings: settings)
         if resolved.behavior == .documentAware, !resolved.isExcluded {
+            // Like the red close button: Cmd+W on a panel or dialog must never quit (issue #6).
+            let focusedIsStandard = axInspector.focusedWindow(ofApplication: pid).map { window in
+                windowClassifier.isStandardWindow(role: axInspector.role(of: window), subrole: axInspector.subrole(of: window))
+            } ?? false
+            guard focusedIsStandard else {
+                if settings.debugLoggingLevel == .verbose {
+                    Log.interception.debug("Document check not armed (Cmd+W): focused window is not a standard window bundle=\(bundleID)")
+                }
+                return
+            }
             if settings.debugLoggingLevel == .info || settings.debugLoggingLevel == .verbose {
                 Log.interception.info("Document check armed (Cmd+W) bundle=\(bundleID)")
             }

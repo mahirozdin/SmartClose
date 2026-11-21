@@ -284,6 +284,16 @@
         }
       }
     },
+    "Close button not found": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Кнопка закрытия не найдена"
+          }
+        }
+      }
+    },
     "Closed window is not a standard window": {
       "localizations": {
         "ru": {

@@ -12,6 +12,7 @@ final class MockAXInspector: AXInspecting {
     func windowInfos(for pid: pid_t) -> [WindowInfo] { windowInfosToReturn }
     func closeButton(ofWindow window: AXUIElement) -> AXUIElement? { nil }
     func frame(of element: AXUIElement) -> CGRect? { nil }
+    func focusedWindow(ofApplication pid: pid_t) -> AXUIElement? { nil }
 }
 
 final class MockWindowServerInspector: WindowServerInspecting {
