@@ -92,6 +92,11 @@ if ! grep -q "TeamIdentifier=${TEAM_ID}" <<< "${SIGNATURE_INFO}"; then
   exit 1
 fi
 
+if ! codesign -d --entitlements - --xml "${APP_PATH}" 2>/dev/null | grep -q "com.apple.security.automation.apple-events"; then
+  echo "error: exported app is missing the Apple Events entitlement (needed for 'Quit when last document closes')" >&2
+  exit 1
+fi
+
 echo "==> Notarizing app bundle"
 ditto -c -k --sequesterRsrc --keepParent "${APP_PATH}" "${SUBMISSION_ZIP}"
 xcrun notarytool submit "${SUBMISSION_ZIP}" --keychain-profile "${NOTARY_PROFILE}" --wait

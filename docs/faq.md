@@ -18,3 +18,8 @@ Launch SmartClose from Applications, Spotlight, or Finder whenever you want to o
 
 ## Does it work with all apps?
 Not always. Some apps expose windows in non-standard ways. SmartClose defaults to fail-safe behavior in ambiguous cases.
+
+## Adobe Illustrator or InDesign stays open after I close the last document. Why?
+Adobe apps keep an empty window (the Application Frame) open after the last document closes, and macOS reports it as a normal window. To SmartClose this looks like an app with one window left, so it does not quit. InDesign's windows can also be reported in a way SmartClose treats as ambiguous.
+
+Add a per-app rule for the app with its exact bundle ID (for example `com.adobe.illustrator` or `com.adobe.InDesign`) and the policy **Quit when last document closes**. Avoid wildcards such as `com.adobe.*`: they would also move Adobe apps without AppleScript documents (for example Premiere Pro or Lightroom) to this rule, and those would then never quit. SmartClose then asks the app how many documents are open after you close a window, and quits it only when none remain and at most one window (the empty frame) is left. macOS asks once for Automation permission. For `Cmd+W`, also enable **Handle Cmd+W (experimental)**.

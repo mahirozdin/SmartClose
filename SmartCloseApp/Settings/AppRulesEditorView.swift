@@ -48,11 +48,22 @@ struct AppRulesEditorView: View {
                     let trimmed = newPattern.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !trimmed.isEmpty else { return }
                     rules[trimmed] = newPolicy
+                    requestAutomationIfNeeded(pattern: trimmed, policy: newPolicy)
                     newPattern = ""
                     newPolicy = .default
                 }
             }
+
+            Text("“Quit when last document closes” is for apps that keep an empty window open after their last document closes, such as Adobe Illustrator and InDesign. After you close a window, SmartClose asks the app how many documents are open and quits it only when none remain. macOS asks once for permission to control the app (Automation).")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
+    }
+
+    private func requestAutomationIfNeeded(pattern: String, policy: AppPolicy) {
+        guard policy == .quitWhenLastDocumentCloses else { return }
+        AutomationPermission.requestForRunningApps(matching: pattern)
     }
 
     private var sortedKeys: [String] {
@@ -62,7 +73,10 @@ struct AppRulesEditorView: View {
     private func binding(for key: String) -> Binding<AppPolicy> {
         Binding(
             get: { rules[key] ?? .default },
-            set: { rules[key] = $0 }
+            set: {
+                rules[key] = $0
+                requestAutomationIfNeeded(pattern: key, policy: $0)
+            }
         )
     }
 }

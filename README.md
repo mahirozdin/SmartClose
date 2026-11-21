@@ -58,7 +58,7 @@ Each release also includes a notarized ZIP of the same app bundle and a SHA-256 
 ## Configuration
 
 - Ignore list and allow list with `*` wildcard support
-- Per-app policies: default, always normal close, always quit on last window, disabled
+- Per-app policies: default, always normal close, always quit on last window, quit when last document closes, disabled
 - Hidden and minimized window handling toggles
 - Optional Cmd+W handling (experimental, off by default) — see below
 - Pause mode
@@ -81,9 +81,36 @@ then re-checks the window count over a short bounded retry window and requests a
 normal quit only if that actually closed the app's last normal window. It honors
 the ignore/allow lists and per-app rules, and never acts on SmartClose itself.
 
+### Quit when last document closes (per-app rule)
+
+Some apps keep an empty window open after their last document closes. Adobe
+Illustrator's empty Application Frame, for example, is still reported to
+Accessibility as a standard window, so the window count never reaches "last
+window". For apps like this, add a per-app rule (**Settings → Per-App Rules**)
+with the policy **Quit when last document closes**:
+
+- The red close button or `Cmd+W` always goes through normally, so the app
+  closes the document itself and shows any save prompt.
+- SmartClose then asks the app for its document count over Apple Events (the
+  same as `tell application id "…" to count documents`) for about 3 seconds,
+  and requests a normal quit only when the app reports zero open documents and
+  at most one standard window (the empty frame) is left. If you answer a save
+  prompt after that, the app stays open.
+- Closing a panel or dialog (or pressing `Cmd+W` in one) never quits.
+- If the count cannot be read (no permission, no reply, or the app does not
+  support AppleScript documents), SmartClose does nothing.
+- `Cmd+W` still requires **Handle Cmd+W (experimental)** to be on.
+
+macOS asks once for permission to let SmartClose control that app
+(**Privacy & Security → Automation**). Use this rule only for apps that support
+AppleScript documents, such as Adobe Illustrator, InDesign, and Photoshop, and
+add it with the app's exact bundle ID rather than a wildcard.
+
 ## Permissions
 
 SmartClose uses macOS Accessibility APIs to detect the close action and inspect windows, plus Input Monitoring to receive the global close-button click.
+
+Apps you set to **Quit when last document closes** also need Automation permission, which macOS requests once per app.
 
 Detailed permission notes live in [docs/permissions.md](./docs/permissions.md).
 

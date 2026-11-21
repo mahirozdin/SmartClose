@@ -24,6 +24,8 @@
     <string>public.app-category.utilities</string>
     <key>LSUIElement</key>
     <true/>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>SmartClose asks apps you set to “Quit when last document closes” how many documents are open, so it can quit them after their last document closes.</string>
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>SUEnableAutomaticChecks</key>

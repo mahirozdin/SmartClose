@@ -36,3 +36,33 @@ is an example: its windows belong to `com.electron.dockerdesktop` inside `com.do
   rules do not apply to the bundled apps.
 The host lookup runs only after a close button is detected. It reads `Info.plist` once per app
 and caches the result.
+
+## Quit when last document closes
+Some apps keep a standard window open with no document in it, so window counts cannot decide.
+Adobe Illustrator's empty Application Frame stays an `AXStandardWindow` after the last document
+closes (#29), and InDesign's windows can classify as ambiguous (#30). Apps with the per-app policy
+**Quit when last document closes** skip window counting:
+- Red close button: the click always goes through. If the closed window is a standard window,
+  SmartClose asks the app for its document count (`core/cnte`, `kocl = docu`, the event sent by
+  `count documents`) on a background queue, starting after 0.3 s and retrying every 0.3 s for up
+  to 3 s. Closing an auxiliary window (panel, dialog) never starts a check.
+- `Cmd+W` (when Cmd+W handling is enabled for the app): the same check starts after the
+  keystroke, but only when the app's focused window is a standard window.
+- A count of zero requests a normal quit when at most one countable standard window is left (the
+  empty frame); more windows pass through. Only an integer reply counts. A positive count, a
+  timeout, an unreadable reply, denied Automation permission, or an app that does not support
+  documents passes through. A newer close in the same app replaces a running check, and pausing,
+  disabling or stopping SmartClose stops it.
+- The check never shows the Automation prompt itself. Permission is requested when the rule is
+  picked for a running app, or once right after a check reports it missing.
+- If the app's hit-test does not land on its close button, SmartClose checks whether the click is
+  inside the Accessibility frame of the window's own `AXCloseButton`. This happens only for apps
+  using this policy, and only for clicks in the top-left window-controls area of the app's window
+  (from the WindowServer list, without Accessibility calls). When that area is clicked but no
+  close button is found, Diagnostics records what the app exposed (at most once every 10 seconds).
+
+## Diagnostics details
+For the red close button, Diagnostics lists the window classification reasons (for example
+`Unknown subrole: …` or `Auxiliary window present alongside last standard window`) when windows
+were ignored or the classification was ambiguous. Document checks list every document count
+sample and the elapsed time.
