@@ -295,4 +295,18 @@ final class DocumentAwareTests: XCTestCase {
             "Window classification: Ignored auxiliary subrole: AXFloatingWindow (×2), Auxiliary window present alongside last standard window"
         )
     }
+
+    // A pause or a changed rule stops the check before (and after) the blocking Apple Event.
+    func testDocumentRuleAppliesOnlyWhileActive() {
+        var settings = Settings.default
+        settings.isEnabled = true
+        XCTAssertTrue(InterceptionController.documentRuleApplies(resolved: policy(.documentAware), settings: settings))
+        XCTAssertFalse(InterceptionController.documentRuleApplies(resolved: policy(.smartClose), settings: settings))
+        XCTAssertFalse(InterceptionController.documentRuleApplies(resolved: policy(.documentAware, excluded: true), settings: settings))
+        settings.pauseUntil = Date().addingTimeInterval(600)
+        XCTAssertFalse(InterceptionController.documentRuleApplies(resolved: policy(.documentAware), settings: settings))
+        settings.pauseUntil = nil
+        settings.isEnabled = false
+        XCTAssertFalse(InterceptionController.documentRuleApplies(resolved: policy(.documentAware), settings: settings))
+    }
 }

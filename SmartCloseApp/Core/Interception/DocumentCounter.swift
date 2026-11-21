@@ -199,8 +199,12 @@ enum AutomationPermission {
         queue.async {
             for bundleID in bundleIDs {
                 let target = NSAppleEventDescriptor(bundleIdentifier: bundleID)
-                guard let aeDesc = target.aeDesc else { continue }
-                let status = AEDeterminePermissionToAutomateTarget(aeDesc, typeWildCard, typeWildCard, true)
+                // `aeDesc` points into `target`; keep `target` alive for the whole call.
+                let status: OSStatus? = withExtendedLifetime(target) {
+                    guard let aeDesc = target.aeDesc else { return nil }
+                    return AEDeterminePermissionToAutomateTarget(aeDesc, typeWildCard, typeWildCard, true)
+                }
+                guard let status else { continue }
                 Log.interception.info("Automation permission bundle=\(bundleID, privacy: .public) status=\(status)")
             }
         }

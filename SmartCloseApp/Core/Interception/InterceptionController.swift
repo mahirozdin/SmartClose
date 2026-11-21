@@ -142,18 +142,21 @@ final class InterceptionController: @unchecked Sendable {
             return .passThrough
         }
         let element: AXUIElement
+        var knownWindow: AXUIElement?
         if isCloseButton(element: hitElement) {
             element = hitElement
-        } else if let documentAppCloseButton = documentAwareCloseButton(at: point, hitElement: hitElement, settings: settings) {
+        } else if let fallback = documentAwareCloseButton(at: point, hitElement: hitElement, settings: settings) {
             // Some apps' hit-test does not land on the close button (Adobe Illustrator reported no
-            // close at all, issue #29). Only for apps the user opted into the document rule.
+            // close at all, issue #29). Only for apps the user opted into the document rule. Keep
+            // the window the button came from: custom AX trees may not link the button back to it.
             if logVerbose { Log.interception.debug("Close button found through the window's AXCloseButton frame") }
-            element = documentAppCloseButton
+            element = fallback.closeButton
+            knownWindow = fallback.window
         } else {
             if logVerbose { Log.interception.debug("Pass-through: element is not close button") }
             return .passThrough
         }
-        guard let window = axInspector.windowForElement(element) else {
+        guard let window = knownWindow ?? axInspector.windowForElement(element) else {
             if logVerbose { Log.interception.debug("Pass-through: no window for element") }
             return .passThrough
         }
@@ -314,7 +317,7 @@ final class InterceptionController: @unchecked Sendable {
     /// for its `AXCloseButton`. Skipped entirely unless a per-app rule uses the document rule, and
     /// clicks outside the top-left window-controls area of the app's frontmost window under the
     /// pointer (from the WindowServer list, no Accessibility) never reach Accessibility.
-    private func documentAwareCloseButton(at point: CGPoint, hitElement: AXUIElement, settings: Settings) -> AXUIElement? {
+    private func documentAwareCloseButton(at point: CGPoint, hitElement: AXUIElement, settings: Settings) -> (closeButton: AXUIElement, window: AXUIElement)? {
         guard settings.perAppRules.values.contains(.quitWhenLastDocumentCloses) else { return nil }
         guard let pid = axInspector.pid(of: hitElement),
               let app = NSRunningApplication(processIdentifier: pid),
@@ -328,8 +331,8 @@ final class InterceptionController: @unchecked Sendable {
         let window = axInspector.windowForElement(hitElement)
         let closeButton = window.flatMap { axInspector.closeButton(ofWindow: $0) }
         let frame = closeButton.flatMap { axInspector.frame(of: $0) }
-        if let closeButton, Self.closeButtonFrame(frame, contains: point) {
-            return closeButton
+        if let window, let closeButton, Self.closeButtonFrame(frame, contains: point) {
+            return (closeButton, window)
         }
 
         // Record what the app exposed, so a report like issue #29 shows why no close was seen.
@@ -434,10 +437,15 @@ final class InterceptionController: @unchecked Sendable {
             return
         }
 
-        // Re-read settings so pausing or disabling SmartClose mid-check is honored.
-        let settings = settingsStore.settings
+        // Do not even ask the app once SmartClose is paused or disabled or the rule changed.
+        guard documentRuleStillApplies(bundleID: bundleID, hostBundleID: hostBundleID, settings: settingsStore.settings) else {
+            finishDocumentCheck(pid: pid, token: token)
+            return
+        }
         let result = documentCounter.documentCount(for: pid, timeout: documentVerificationPolicy.requestTimeout)
         guard isCurrentDocumentCheck(pid: pid, token: token) else { return }
+        // Re-read settings after the blocking request, so a pause during it is honored.
+        let settings = settingsStore.settings
 
         if result == .failed(DocumentCountResult.consentRequired) {
             requestAutomationOnce(bundleID: bundleID)
@@ -479,15 +487,19 @@ final class InterceptionController: @unchecked Sendable {
                 decision: decision,
                 windowCount: nil,
                 ignoredCount: nil,
-                actionTaken: success ? String(localized: "Requested quit") : String(localized: "Quit request failed"),
-                details: Self.documentCheckDetails(trigger: trigger, samples: samples, elapsed: elapsed, remainingWindows: remainingWindows)
+                actionTaken: trigger == .cmdW
+                    ? (success ? String(localized: "Requested quit (Cmd+W)") : String(localized: "Quit request failed (Cmd+W)"))
+                    : (success ? String(localized: "Requested quit") : String(localized: "Quit request failed")),
+                details: Self.joinedDetails(
+                    Self.hostMatchDetails(resolved),
+                    Self.documentCheckDetails(trigger: trigger, samples: samples, elapsed: elapsed, remainingWindows: remainingWindows)
+                )
             )
             return
         }
 
         // Keep checking only while the rule still applies and SmartClose is active.
-        let stillApplies = settings.isEnabled && !settings.isPaused
-            && !resolved.isExcluded && resolved.behavior == .documentAware
+        let stillApplies = Self.documentRuleApplies(resolved: resolved, settings: settings)
         if stillApplies, let nextDelay = documentVerificationPolicy.nextDelay(afterElapsed: elapsed, latestResult: result) {
             documentQueue.asyncAfter(deadline: .now() + nextDelay) { [weak self] in
                 self?.verifyDocuments(
@@ -510,9 +522,23 @@ final class InterceptionController: @unchecked Sendable {
             decision: decision,
             windowCount: nil,
             ignoredCount: nil,
-            actionTaken: String(localized: "Passed through"),
-            details: Self.documentCheckDetails(trigger: trigger, samples: samples, elapsed: elapsed, remainingWindows: remainingWindows)
+            actionTaken: trigger == .cmdW ? String(localized: "Passed through (Cmd+W)") : String(localized: "Passed through"),
+            details: Self.joinedDetails(
+                Self.hostMatchDetails(resolved),
+                Self.documentCheckDetails(trigger: trigger, samples: samples, elapsed: elapsed, remainingWindows: remainingWindows)
+            )
         )
+    }
+
+    private func documentRuleStillApplies(bundleID: String, hostBundleID: String?, settings: Settings) -> Bool {
+        Self.documentRuleApplies(
+            resolved: policyResolver.resolve(bundleID: bundleID, hostBundleID: hostBundleID, settings: settings),
+            settings: settings
+        )
+    }
+
+    static func documentRuleApplies(resolved: ResolvedPolicy, settings: Settings) -> Bool {
+        settings.isEnabled && !settings.isPaused && !resolved.isExcluded && resolved.behavior == .documentAware
     }
 
     static func documentCheckDetails(
