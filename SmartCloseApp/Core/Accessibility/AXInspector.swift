@@ -8,6 +8,10 @@ protocol AXInspecting {
     func windowForElement(_ element: AXUIElement) -> AXUIElement?
     func pid(of element: AXUIElement) -> pid_t?
     func windowInfos(for pid: pid_t) -> [WindowInfo]
+    /// The window's own close button (`AXCloseButton` attribute), if it exposes one.
+    func closeButton(ofWindow window: AXUIElement) -> AXUIElement?
+    /// Screen frame (top-left origin, like `CGEvent.location`) from `AXPosition` and `AXSize`.
+    func frame(of element: AXUIElement) -> CGRect?
 }
 
 final class AXInspector: AXInspecting {
@@ -60,6 +64,24 @@ final class AXInspector: AXInspecting {
                 title: attribute(window, kAXTitleAttribute)
             )
         }
+    }
+
+    func closeButton(ofWindow window: AXUIElement) -> AXUIElement? {
+        attribute(window, kAXCloseButtonAttribute)
+    }
+
+    func frame(of element: AXUIElement) -> CGRect? {
+        guard
+            let positionValue: AXValue = attribute(element, kAXPositionAttribute),
+            let sizeValue: AXValue = attribute(element, kAXSizeAttribute)
+        else { return nil }
+        var origin = CGPoint.zero
+        var size = CGSize.zero
+        guard
+            AXValueGetValue(positionValue, .cgPoint, &origin),
+            AXValueGetValue(sizeValue, .cgSize, &size)
+        else { return nil }
+        return CGRect(origin: origin, size: size)
     }
 
     private func attribute<T>(_ element: AXUIElement, _ attribute: String) -> T? {

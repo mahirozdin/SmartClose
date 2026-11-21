@@ -13,6 +13,8 @@
 		25B232016F2C4C638B0FC6CA /* WindowCountingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BC2C84913894FAF9D018EF1 /* WindowCountingService.swift */; };
 		330E56BBC35D46C0A4925AD0 /* InterceptionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 867851A081EF42C5B41D1234 /* InterceptionController.swift */; };
 		38DB639A12964410B4754E43 /* ActionExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6873A36F4524BCBA795181D /* ActionExecutor.swift */; };
+		D0C5A11E29A4400000000001 /* DocumentCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C5A11E29A4400000000002 /* DocumentCounter.swift */; };
+		D0C5A11E29A4400000000003 /* DocumentAwareTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C5A11E29A4400000000004 /* DocumentAwareTests.swift */; };
 		3B0308D2C8194C40B965FAAD /* AppPolicyResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F9B9CA14620458A8EED3BEA /* AppPolicyResolverTests.swift */; };
 		47AF03D704C94C89854B47F0 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 182248BE6E2640CCBD60D97A /* OnboardingView.swift */; };
 		4F7D8B2E7C8C4E0BAA6D4F88 /* AppRelauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F1A6B2E3C3C4A909A25F0C1 /* AppRelauncher.swift */; };
@@ -102,6 +104,8 @@
 		A23344385A6746A1A995EA8D /* StatusMenuController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenuController.swift; sourceTree = "<group>"; };
 		A676315AB0C94649A7EF1591 /* DecisionEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecisionEngineTests.swift; sourceTree = "<group>"; };
 		A6873A36F4524BCBA795181D /* ActionExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionExecutor.swift; sourceTree = "<group>"; };
+		D0C5A11E29A4400000000002 /* DocumentCounter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentCounter.swift; sourceTree = "<group>"; };
+		D0C5A11E29A4400000000004 /* DocumentAwareTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentAwareTests.swift; sourceTree = "<group>"; };
 		B1C2D3E4F5A60718293B4C5D /* AXNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXNames.swift; sourceTree = "<group>"; };
 		BFB54A550B514DABB5C6C421 /* SmartCloseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = SmartCloseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C00610490F7A48F3B3D489FC /* AppPolicyResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPolicyResolver.swift; sourceTree = "<group>"; };
@@ -170,6 +174,7 @@
 				CAAF2EBC3ABB429B90D6ACF5 /* MockAXInspector.swift */,
 				507AA03A4D0F4EBFBC28051B /* WindowCountingServiceTests.swift */,
 				5E7715C0DAB1E00000000001 /* SettingsCodableTests.swift */,
+				D0C5A11E29A4400000000004 /* DocumentAwareTests.swift */,
 			);
 			path = SmartCloseTests;
 			sourceTree = "<group>";
@@ -331,6 +336,7 @@
 				A7C1E0F2B3D4456789ABCD02 /* OwnWindowHitTester.swift */,
 				867851A081EF42C5B41D1234 /* InterceptionController.swift */,
 				A6873A36F4524BCBA795181D /* ActionExecutor.swift */,
+				D0C5A11E29A4400000000002 /* DocumentCounter.swift */,
 			);
 			path = Interception;
 			sourceTree = "<group>";
@@ -494,6 +500,7 @@
 				B28268FB6CEE456E9121F7DF /* MockAXInspector.swift in Sources */,
 				E8ECF8007A6C46C2B83AC6B2 /* WindowCountingServiceTests.swift in Sources */,
 				5E7715C0DAB1E00000000002 /* SettingsCodableTests.swift in Sources */,
+				D0C5A11E29A4400000000003 /* DocumentAwareTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -524,6 +531,7 @@
 				A7C1E0F2B3D4456789ABCD01 /* OwnWindowHitTester.swift in Sources */,
 				330E56BBC35D46C0A4925AD0 /* InterceptionController.swift in Sources */,
 				38DB639A12964410B4754E43 /* ActionExecutor.swift in Sources */,
+				D0C5A11E29A4400000000001 /* DocumentCounter.swift in Sources */,
 				15777E64EBF94084A9F272A8 /* AXInspector.swift in Sources */,
 				A1B2C3D4E5F60718293A4B5C /* AXNames.swift in Sources */,
 				A4727998FD0C4526AB45CD7E /* WindowInfo.swift in Sources */,
@@ -564,6 +572,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SmartCloseApp/Resources/SmartClose.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = WWRZ5CG3DW;
@@ -636,6 +645,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SmartCloseApp/Resources/SmartClose.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = WWRZ5CG3DW;

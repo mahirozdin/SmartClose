@@ -184,6 +184,16 @@
         }
       }
     },
+    "Automation permission missing": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет разрешения на автоматизацию"
+          }
+        }
+      }
+    },
     "Back": {
       "localizations": {
         "ru": {
@@ -250,6 +260,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Проверка"
+          }
+        }
+      }
+    },
+    "Checking open documents after close": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверка открытых документов после закрытия"
           }
         }
       }
@@ -370,6 +390,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Отключено для этого приложения"
+          }
+        }
+      }
+    },
+    "Document count unavailable": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Число документов недоступно"
+          }
+        }
+      }
+    },
+    "Document count unavailable (Apple Events error %lld)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Число документов недоступно (ошибка Apple Events %lld)"
+          }
+        }
+      }
+    },
+    "Document rule no longer applies": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Правило документов больше не применяется"
+          }
+        }
+      }
+    },
+    "Documents still open": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Документы всё ещё открыты"
           }
         }
       }
@@ -684,6 +744,16 @@
         }
       }
     },
+    "Last document closed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последний документ закрыт"
+          }
+        }
+      }
+    },
     "Last normal window": {
       "localizations": {
         "ru": {
@@ -950,6 +1020,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Не удалось запросить завершение (Cmd+W)"
+          }
+        }
+      }
+    },
+    "Quit when last document closes": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Завершать после закрытия последнего документа"
           }
         }
       }
@@ -1400,6 +1480,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "macOS предоставила доступ, но SmartClose нужно перезапустить, чтобы начать мониторинг."
+          }
+        }
+      }
+    },
+    "“Quit when last document closes” is for apps that keep an empty window open after their last document closes, such as Adobe Illustrator and InDesign. After you close a window, SmartClose asks the app how many documents are open and quits it only when none remain. macOS asks once for permission to control the app (Automation).": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«Завершать после закрытия последнего документа» подходит для приложений, которые оставляют пустое окно открытым после закрытия последнего документа, например Adobe Illustrator и InDesign. После закрытия окна SmartClose спрашивает приложение, сколько документов открыто, и завершает его, только если документов не осталось. macOS один раз запросит разрешение на управление приложением (Автоматизация)."
           }
         }
       }

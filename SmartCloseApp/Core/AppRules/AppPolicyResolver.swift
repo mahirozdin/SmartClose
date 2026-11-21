@@ -3,6 +3,8 @@ import Foundation
 enum CloseBehavior: String {
     case smartClose
     case alwaysNormalClose
+    /// Ignore window counts; after a close, quit only when the app reports zero open documents.
+    case documentAware
     case disabled
 }
 
@@ -176,6 +178,8 @@ final class AppPolicyResolver {
             return ResolvedPolicy(behavior: .alwaysNormalClose, matchedRule: matchedRule, isExcluded: false, viaHostBundleID: viaHostBundleID)
         case .alwaysQuitOnLastWindow:
             return ResolvedPolicy(behavior: .smartClose, matchedRule: matchedRule, isExcluded: false, viaHostBundleID: viaHostBundleID)
+        case .quitWhenLastDocumentCloses:
+            return ResolvedPolicy(behavior: .documentAware, matchedRule: matchedRule, isExcluded: false, viaHostBundleID: viaHostBundleID)
         case .disabled:
             return ResolvedPolicy(behavior: .disabled, matchedRule: matchedRule, isExcluded: true, viaHostBundleID: viaHostBundleID)
         }

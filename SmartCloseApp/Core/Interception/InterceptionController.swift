@@ -24,9 +24,15 @@ struct CmdWVerificationPolicy: Equatable {
     }
 }
 
+/// What started a document check for an app using the "Quit when last document closes" rule.
+enum DocumentCloseTrigger: String {
+    case closeButton
+    case cmdW
+}
+
 // All stored dependencies are immutable `let` references already shared with the event-tap
-// thread; the controller holds no mutable state of its own, so it is safe to hand to the
-// main-actor verification closure used by the optional Cmd+W path.
+// thread. The only mutable state, the active document-check tokens, is guarded by a lock, so the
+// controller is safe to hand to the verification closures used by the Cmd+W and document paths.
 final class InterceptionController: @unchecked Sendable {
     private let settingsStore: SettingsStore
     private let eventMonitor: EventMonitor
@@ -39,7 +45,16 @@ final class InterceptionController: @unchecked Sendable {
     private let diagnosticsStore: DiagnosticsStore
     private let ownWindowHitTester: OwnWindowHitTester
     private let hostAppResolver: HostAppResolver
+    private let documentCounter: DocumentCounting
+    private let documentVerificationPolicy: DocumentVerificationPolicy
     private let selfBundleID = Bundle.main.bundleIdentifier
+    /// Apple Events block until the app replies, so document checks run on their own queue,
+    /// never on the event-tap thread or the main thread.
+    private let documentQueue = DispatchQueue(label: "SmartClose.DocumentCount", qos: .userInitiated)
+    private let documentTokensLock = NSLock()
+    /// Latest document check per app. A newer close replaces an older check for the same app, so
+    /// one close produces one decision and one diagnostics entry.
+    private var documentTokens: [pid_t: UUID] = [:]
 
     init(
         settingsStore: SettingsStore,
@@ -52,7 +67,9 @@ final class InterceptionController: @unchecked Sendable {
         actionExecutor: ActionExecutor,
         diagnosticsStore: DiagnosticsStore,
         ownWindowHitTester: OwnWindowHitTester = OwnWindowHitTester(),
-        hostAppResolver: HostAppResolver = HostAppResolver()
+        hostAppResolver: HostAppResolver = HostAppResolver(),
+        documentCounter: DocumentCounting = AppleEventDocumentCounter(),
+        documentVerificationPolicy: DocumentVerificationPolicy = DocumentVerificationPolicy()
     ) {
         self.settingsStore = settingsStore
         self.eventMonitor = eventMonitor
@@ -65,6 +82,8 @@ final class InterceptionController: @unchecked Sendable {
         self.diagnosticsStore = diagnosticsStore
         self.ownWindowHitTester = ownWindowHitTester
         self.hostAppResolver = hostAppResolver
+        self.documentCounter = documentCounter
+        self.documentVerificationPolicy = documentVerificationPolicy
     }
 
     @discardableResult
@@ -111,11 +130,19 @@ final class InterceptionController: @unchecked Sendable {
             if logVerbose { Log.interception.debug("Pass-through: click on SmartClose's own window") }
             return .passThrough
         }
-        guard let element = axInspector.elementAtScreenPoint(point) else {
+        guard let hitElement = axInspector.elementAtScreenPoint(point) else {
             if logVerbose { Log.interception.debug("Pass-through: no AX element at point") }
             return .passThrough
         }
-        guard isCloseButton(element: element) else {
+        let element: AXUIElement
+        if isCloseButton(element: hitElement) {
+            element = hitElement
+        } else if let documentAppCloseButton = documentAwareCloseButton(at: point, hitElement: hitElement, settings: settings) {
+            // Some apps' hit-test does not land on the close button (Adobe Illustrator reported no
+            // close at all, issue #29). Only for apps the user opted into the document rule.
+            if logVerbose { Log.interception.debug("Close button found through the window's AXCloseButton frame") }
+            element = documentAppCloseButton
+        } else {
             if logVerbose { Log.interception.debug("Pass-through: element is not close button") }
             return .passThrough
         }
@@ -155,6 +182,18 @@ final class InterceptionController: @unchecked Sendable {
             return .passThrough
         }
 
+        if resolved.behavior == .documentAware {
+            return handleDocumentAwareClose(
+                window: window,
+                pid: pid,
+                runningApp: runningApp,
+                bundleID: bundleID,
+                hostBundleID: hostBundleID,
+                resolved: resolved,
+                settings: settings
+            )
+        }
+
         let appHidden = runningApp.isHidden
         let windowCountResult = windowCountingService.countWindows(for: pid, appIsHidden: appHidden, settings: settings)
         if logVerbose {
@@ -188,6 +227,9 @@ final class InterceptionController: @unchecked Sendable {
         if logInfo {
             Log.interception.info("Decision action=\(decision.action.rawValue) reason=\(decision.reason) bundle=\(bundleID)")
         }
+        // Show why a classification was ambiguous or windows were ignored, so reports like
+        // issue #30 ("Ambiguous window classification") carry the cause.
+        let decisionDetails = Self.joinedDetails(policyDetails, Self.classificationDetails(windowCountResult))
 
         if decision.action == .requestQuit {
             let success = actionExecutor.requestQuit(pid: pid)
@@ -198,7 +240,7 @@ final class InterceptionController: @unchecked Sendable {
                 windowCount: windowCountResult?.count,
                 ignoredCount: windowCountResult?.ignoredCount,
                 actionTaken: success ? String(localized: "Requested quit") : String(localized: "Quit request failed"),
-                details: policyDetails
+                details: decisionDetails
             )
             return .swallow
         }
@@ -210,9 +252,215 @@ final class InterceptionController: @unchecked Sendable {
             windowCount: windowCountResult?.count,
             ignoredCount: windowCountResult?.ignoredCount,
             actionTaken: String(localized: "Passed through"),
-            details: policyDetails
+            details: decisionDetails
         )
         return .passThrough
+    }
+
+    /// Red close button in an app using the "Quit when last document closes" rule. The click
+    /// always goes through so the app closes the document itself (including any save prompt);
+    /// SmartClose then asks the app how many documents remain.
+    private func handleDocumentAwareClose(
+        window: AXUIElement,
+        pid: pid_t,
+        runningApp: NSRunningApplication,
+        bundleID: String,
+        hostBundleID: String?,
+        resolved: ResolvedPolicy,
+        settings: Settings
+    ) -> EventDisposition {
+        let closedWindowIsStandard = windowClassifier.isStandardWindow(
+            role: axInspector.role(of: window),
+            subrole: axInspector.subrole(of: window)
+        )
+        let context = DecisionContext(
+            isEnabled: settings.isEnabled,
+            isPaused: settings.isPaused,
+            permissionGranted: true,
+            resolvedPolicy: resolved,
+            windowCount: nil,
+            closedWindowIsStandard: closedWindowIsStandard
+        )
+
+        if decisionEngine.shouldVerifyDocuments(context: context) {
+            if settings.debugLoggingLevel == .info || settings.debugLoggingLevel == .verbose {
+                Log.interception.info("Document check armed (close button) bundle=\(bundleID)")
+            }
+            startDocumentVerification(pid: pid, bundleID: bundleID, hostBundleID: hostBundleID, trigger: .closeButton)
+            return .passThrough
+        }
+
+        logDecision(
+            app: runningApp,
+            bundleID: bundleID,
+            decision: decisionEngine.decide(context: context),
+            windowCount: nil,
+            ignoredCount: nil,
+            actionTaken: String(localized: "Passed through"),
+            details: Self.hostMatchDetails(resolved)
+        )
+        return .passThrough
+    }
+
+    /// For apps using the document rule only: when the hit-test landed on something other than
+    /// the close button, checks whether the click is inside the frame the window itself reports
+    /// for its `AXCloseButton`. Costs nothing unless some per-app rule uses the document rule.
+    private func documentAwareCloseButton(at point: CGPoint, hitElement: AXUIElement, settings: Settings) -> AXUIElement? {
+        guard settings.perAppRules.values.contains(.quitWhenLastDocumentCloses) else { return nil }
+        guard let pid = axInspector.pid(of: hitElement),
+              let app = NSRunningApplication(processIdentifier: pid),
+              let bundleID = app.bundleIdentifier,
+              bundleID != selfBundleID else { return nil }
+        let hostBundleID = hostAppResolver.hostBundleID(forAppAt: app.bundleURL)
+        let resolved = policyResolver.resolve(bundleID: bundleID, hostBundleID: hostBundleID, settings: settings)
+        guard !resolved.isExcluded, resolved.behavior == .documentAware else { return nil }
+        guard let window = axInspector.windowForElement(hitElement),
+              let closeButton = axInspector.closeButton(ofWindow: window),
+              Self.closeButtonFrame(axInspector.frame(of: closeButton), contains: point) else { return nil }
+        return closeButton
+    }
+
+    /// Whether `point` is inside a close button's Accessibility frame. Empty or missing frames
+    /// never match.
+    static func closeButtonFrame(_ frame: CGRect?, contains point: CGPoint) -> Bool {
+        guard let frame, frame.width > 0, frame.height > 0 else { return false }
+        return frame.contains(point)
+    }
+
+    // MARK: - Document checks ("Quit when last document closes")
+
+    private func startDocumentVerification(pid: pid_t, bundleID: String, hostBundleID: String?, trigger: DocumentCloseTrigger) {
+        let token = UUID()
+        documentTokensLock.lock()
+        documentTokens[pid] = token
+        documentTokensLock.unlock()
+
+        let startedAt = Date()
+        documentQueue.asyncAfter(deadline: .now() + documentVerificationPolicy.initialDelay) { [weak self] in
+            self?.verifyDocuments(
+                pid: pid,
+                bundleID: bundleID,
+                hostBundleID: hostBundleID,
+                trigger: trigger,
+                token: token,
+                startedAt: startedAt,
+                samples: []
+            )
+        }
+    }
+
+    private func isCurrentDocumentCheck(pid: pid_t, token: UUID) -> Bool {
+        documentTokensLock.lock()
+        defer { documentTokensLock.unlock() }
+        return documentTokens[pid] == token
+    }
+
+    private func finishDocumentCheck(pid: pid_t, token: UUID) {
+        documentTokensLock.lock()
+        if documentTokens[pid] == token {
+            documentTokens.removeValue(forKey: pid)
+        }
+        documentTokensLock.unlock()
+    }
+
+    private func verifyDocuments(
+        pid: pid_t,
+        bundleID: String,
+        hostBundleID: String?,
+        trigger: DocumentCloseTrigger,
+        token: UUID,
+        startedAt: Date,
+        samples: [DocumentCountResult]
+    ) {
+        guard isCurrentDocumentCheck(pid: pid, token: token) else { return }
+        guard let app = NSRunningApplication(processIdentifier: pid), !app.isTerminated else {
+            // The app already quit on its own — nothing to do.
+            finishDocumentCheck(pid: pid, token: token)
+            return
+        }
+
+        // Re-read settings so pausing or disabling SmartClose mid-check is honored.
+        let settings = settingsStore.settings
+        let result = documentCounter.documentCount(for: pid, timeout: documentVerificationPolicy.requestTimeout)
+        guard isCurrentDocumentCheck(pid: pid, token: token) else { return }
+
+        let samples = samples + [result]
+        let elapsed = Date().timeIntervalSince(startedAt)
+        let resolved = policyResolver.resolve(bundleID: bundleID, hostBundleID: hostBundleID, settings: settings)
+        let decision = decisionEngine.decideAfterDocumentClose(
+            isEnabled: settings.isEnabled,
+            isPaused: settings.isPaused,
+            permissionGranted: true,
+            resolvedPolicy: resolved,
+            documentCount: result
+        )
+        let logInfo = settings.debugLoggingLevel == .info || settings.debugLoggingLevel == .verbose
+        if logInfo {
+            Log.interception.info("Document check \(trigger.rawValue) result=\(result.summary, privacy: .public) action=\(decision.action.rawValue) bundle=\(bundleID)")
+        }
+
+        if decision.action == .requestQuit {
+            finishDocumentCheck(pid: pid, token: token)
+            let success = actionExecutor.requestQuit(pid: pid)
+            logDecision(
+                app: app,
+                bundleID: bundleID,
+                decision: decision,
+                windowCount: nil,
+                ignoredCount: nil,
+                actionTaken: success ? String(localized: "Requested quit") : String(localized: "Quit request failed"),
+                details: Self.documentCheckDetails(trigger: trigger, samples: samples, elapsed: elapsed)
+            )
+            return
+        }
+
+        // Keep checking only while the rule still applies and SmartClose is active.
+        let stillApplies = settings.isEnabled && !settings.isPaused
+            && !resolved.isExcluded && resolved.behavior == .documentAware
+        if stillApplies, let nextDelay = documentVerificationPolicy.nextDelay(afterElapsed: elapsed, latestResult: result) {
+            documentQueue.asyncAfter(deadline: .now() + nextDelay) { [weak self] in
+                self?.verifyDocuments(
+                    pid: pid,
+                    bundleID: bundleID,
+                    hostBundleID: hostBundleID,
+                    trigger: trigger,
+                    token: token,
+                    startedAt: startedAt,
+                    samples: samples
+                )
+            }
+            return
+        }
+
+        finishDocumentCheck(pid: pid, token: token)
+        logDecision(
+            app: app,
+            bundleID: bundleID,
+            decision: decision,
+            windowCount: nil,
+            ignoredCount: nil,
+            actionTaken: String(localized: "Passed through"),
+            details: Self.documentCheckDetails(trigger: trigger, samples: samples, elapsed: elapsed)
+        )
+    }
+
+    static func documentCheckDetails(trigger: DocumentCloseTrigger, samples: [DocumentCountResult], elapsed: TimeInterval) -> String {
+        let source = trigger == .cmdW ? "Cmd+W" : "close button"
+        let checks = samples.enumerated()
+            .map { index, result in "check[\(index + 1)]=\(result.summary)" }
+            .joined(separator: "; ")
+        return "Document check after \(source): \(checks); elapsed=\(String(format: "%.2f", elapsed))s"
+    }
+
+    /// Window classification reasons worth showing in diagnostics, or nil when there are none.
+    static func classificationDetails(_ result: WindowCountResult?) -> String? {
+        guard let result, !result.reasons.isEmpty else { return nil }
+        return "Window classification: \(result.reasons.joined(separator: ", "))"
+    }
+
+    static func joinedDetails(_ parts: String?...) -> String? {
+        let present = parts.compactMap { $0 }.filter { !$0.isEmpty }
+        return present.isEmpty ? nil : present.joined(separator: " · ")
     }
 
     /// `kVK_ANSI_W` — the virtual key code for the W key.
@@ -243,6 +491,17 @@ final class InterceptionController: @unchecked Sendable {
         guard bundleID != selfBundleID else { return }
         let hostBundleID = hostAppResolver.hostBundleID(forAppAt: app.bundleURL)
         guard policyResolver.cmdWEnabled(bundleID: bundleID, hostBundleID: hostBundleID, settings: settings) else { return }
+
+        // "Quit when last document closes": skip window counting entirely and ask the app for its
+        // document count once it has handled Cmd+W (issues #29, #30).
+        let resolved = policyResolver.resolve(bundleID: bundleID, hostBundleID: hostBundleID, settings: settings)
+        if resolved.behavior == .documentAware, !resolved.isExcluded {
+            if settings.debugLoggingLevel == .info || settings.debugLoggingLevel == .verbose {
+                Log.interception.info("Document check armed (Cmd+W) bundle=\(bundleID)")
+            }
+            startDocumentVerification(pid: pid, bundleID: bundleID, hostBundleID: hostBundleID, trigger: .cmdW)
+            return
+        }
 
         // Count windows BEFORE the app handles Cmd+W. The keystroke has only been observed
         // (the event tap runs before delivery), so the target window is still open here. Arm for

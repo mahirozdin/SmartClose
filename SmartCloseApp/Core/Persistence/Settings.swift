@@ -18,6 +18,10 @@ enum AppPolicy: String, Codable, CaseIterable, Identifiable {
     case `default`
     case alwaysNormalClose
     case alwaysQuitOnLastWindow
+    /// Quit when the app reports no open documents after a close (issues #29, #30). For apps such
+    /// as Adobe Illustrator and InDesign that keep an empty application frame open as a standard
+    /// window. Asks the app over Apple Events, so macOS requests Automation permission once.
+    case quitWhenLastDocumentCloses
     case disabled
 
     var id: String { rawValue }
@@ -27,6 +31,7 @@ enum AppPolicy: String, Codable, CaseIterable, Identifiable {
         case .default: return String(localized: "Default")
         case .alwaysNormalClose: return String(localized: "Always normal close")
         case .alwaysQuitOnLastWindow: return String(localized: "Always quit on last window")
+        case .quitWhenLastDocumentCloses: return String(localized: "Quit when last document closes")
         case .disabled: return String(localized: "Disabled for this app")
         }
     }

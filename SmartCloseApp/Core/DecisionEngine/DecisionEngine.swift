@@ -59,6 +59,14 @@ struct DecisionEngine {
             return DecisionResult(action: .passThrough, reason: String(localized: "Closed window is not a standard window"))
         }
 
+        // "Quit when last document closes" ignores window counts: Adobe Illustrator keeps an empty
+        // application frame open as a standard window, and InDesign's windows can classify as
+        // ambiguous (issues #29, #30). The close goes through normally and the app's own document
+        // count decides afterwards (`decideAfterDocumentClose`).
+        if context.resolvedPolicy.behavior == .documentAware {
+            return DecisionResult(action: .passThrough, reason: String(localized: "Checking open documents after close"))
+        }
+
         guard let windowCount = context.windowCount else {
             return DecisionResult(action: .passThrough, reason: String(localized: "Window count unavailable"))
         }
@@ -76,6 +84,64 @@ struct DecisionEngine {
         }
 
         return DecisionResult(action: .passThrough, reason: String(localized: "Multiple windows open"))
+    }
+
+    /// Whether a red close button click should be followed by a document check: the app uses the
+    /// "Quit when last document closes" rule, SmartClose is active, and the closed window is a
+    /// standard window (closing a panel never quits, issue #6).
+    func shouldVerifyDocuments(context: DecisionContext) -> Bool {
+        context.isEnabled
+            && !context.isPaused
+            && context.permissionGranted
+            && !context.resolvedPolicy.isExcluded
+            && context.resolvedPolicy.behavior == .documentAware
+            && context.closedWindowIsStandard
+    }
+
+    /// Decision after a close (red button or Cmd+W) in an app using the "Quit when last document
+    /// closes" rule. The close itself always went through; SmartClose requests a normal quit only
+    /// when the app reports zero open documents. A count that cannot be read never quits.
+    func decideAfterDocumentClose(
+        isEnabled: Bool,
+        isPaused: Bool,
+        permissionGranted: Bool,
+        resolvedPolicy: ResolvedPolicy,
+        documentCount: DocumentCountResult?
+    ) -> DecisionResult {
+        if !isEnabled {
+            return DecisionResult(action: .passThrough, reason: String(localized: "SmartClose disabled"))
+        }
+
+        if isPaused {
+            return DecisionResult(action: .passThrough, reason: String(localized: "Paused"))
+        }
+
+        if !permissionGranted {
+            return DecisionResult(action: .passThrough, reason: String(localized: "Accessibility permission missing"))
+        }
+
+        if resolvedPolicy.isExcluded || resolvedPolicy.behavior == .disabled {
+            return DecisionResult(action: .passThrough, reason: String(localized: "Excluded by policy"))
+        }
+
+        guard resolvedPolicy.behavior == .documentAware else {
+            return DecisionResult(action: .passThrough, reason: String(localized: "Document rule no longer applies"))
+        }
+
+        switch documentCount {
+        case .none:
+            return DecisionResult(action: .passThrough, reason: String(localized: "Document count unavailable"))
+        case let .failed(code)?:
+            if code == DocumentCountResult.automationDenied || code == DocumentCountResult.consentRequired {
+                return DecisionResult(action: .passThrough, reason: String(localized: "Automation permission missing"))
+            }
+            return DecisionResult(action: .passThrough, reason: String(localized: "Document count unavailable (Apple Events error \(Int(code)))"))
+        case let .count(count)?:
+            if count == 0 {
+                return DecisionResult(action: .requestQuit, reason: String(localized: "Last document closed"))
+            }
+            return DecisionResult(action: .passThrough, reason: String(localized: "Documents still open"))
+        }
     }
 
     /// Decision for the optional Cmd+W path. Unlike `decide`, the keystroke is never
